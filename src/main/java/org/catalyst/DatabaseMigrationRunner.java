@@ -1,4 +1,4 @@
-package org.catalyst.db;
+package org.catalyst;
 
 import org.flywaydb.core.Flyway;
 

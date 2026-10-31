@@ -13,7 +13,6 @@ Catalyst is a community aid management system developed as a university software
 ## Prerequisites
 
 - JDK 23
-- IntelliJ IDEA (recommended)
 - Maven
 - Access to the shared PostgreSQL database
 

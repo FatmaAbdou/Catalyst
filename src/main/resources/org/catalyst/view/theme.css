@@ -1,0 +1,224 @@
+.page {
+    -fx-background-color: #f3f5ef;
+    -fx-font-family: "Segoe UI", "Arial", sans-serif;
+}
+
+.top-bar {
+    -fx-background-color: #fffefa;
+    -fx-border-color: transparent transparent #e8ebe4 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.brand-mark {
+    -fx-background-color: #e5f0e9;
+    -fx-background-radius: 12px;
+    -fx-text-fill: #2f6b55;
+    -fx-font-size: 19px;
+    -fx-padding: 7px 10px;
+}
+
+.brand {
+    -fx-text-fill: #214e3d;
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+}
+
+.top-note, .eyebrow {
+    -fx-text-fill: #b87543;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-letter-spacing: 1.2px;
+}
+
+.welcome-page {
+    -fx-background-color: linear-gradient(to bottom right, #f8f8f1, #edf3eb);
+}
+
+.welcome-content {
+    -fx-max-width: 1100px;
+}
+
+.impact-card {
+    -fx-background-color: #2f6b55;
+    -fx-background-radius: 24px;
+    -fx-padding: 30px 25px;
+    -fx-effect: dropshadow(gaussian, rgba(42, 63, 53, 0.18), 26, 0.15, 0, 10);
+}
+
+.impact-icon {
+    -fx-background-color: rgba(255,255,255,0.14);
+    -fx-background-radius: 50px;
+    -fx-text-fill: #f4c98a;
+    -fx-font-size: 30px;
+    -fx-padding: 14px 18px;
+}
+
+.impact-title {
+    -fx-text-fill: #fffefa;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-alignment: center;
+}
+
+.impact-copy {
+    -fx-text-fill: #e2eee6;
+    -fx-font-size: 13px;
+    -fx-line-spacing: 4px;
+    -fx-text-alignment: center;
+}
+
+.impact-tag {
+    -fx-background-color: rgba(255,255,255,0.12);
+    -fx-background-radius: 20px;
+    -fx-padding: 8px 13px;
+}
+
+.tag-icon {
+    -fx-text-fill: #f4c98a;
+}
+
+.tag-text {
+    -fx-text-fill: #fffefa;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.hero-title {
+    -fx-text-fill: #214e3d;
+    -fx-font-size: 43px;
+    -fx-font-weight: bold;
+    -fx-line-spacing: 2px;
+}
+
+.form-title {
+    -fx-text-fill: #214e3d;
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+}
+
+.body-copy {
+    -fx-text-fill: #68766d;
+    -fx-font-size: 15px;
+    -fx-line-spacing: 3px;
+}
+
+.footer-note, .small-copy {
+    -fx-text-fill: #77837a;
+    -fx-font-size: 12px;
+}
+
+.heart-icon {
+    -fx-text-fill: #bd7951;
+    -fx-font-size: 14px;
+}
+
+.trust-line {
+    -fx-padding: 6px 0 0 0;
+}
+
+.form-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-border-color: transparent;
+}
+
+.form-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.form-page {
+    -fx-background-color: transparent;
+}
+
+.form-card {
+    -fx-background-color: #fffefa;
+    -fx-background-radius: 20px;
+    -fx-border-color: #e7ebe3;
+    -fx-border-radius: 20px;
+    -fx-padding: 34px 38px;
+    -fx-effect: dropshadow(gaussian, rgba(42, 63, 53, 0.10), 25, 0.15, 0, 7);
+}
+
+.login-icon {
+    -fx-background-color: #e7f1e9;
+    -fx-background-radius: 50px;
+    -fx-text-fill: #39745c;
+    -fx-font-size: 22px;
+    -fx-padding: 11px 15px;
+}
+
+.input-field {
+    -fx-pref-height: 46px;
+    -fx-background-color: #f8f9f5;
+    -fx-background-radius: 10px;
+    -fx-border-color: #e0e5dc;
+    -fx-border-radius: 10px;
+    -fx-padding: 0 14px;
+    -fx-font-size: 13px;
+}
+
+.input-field:focused {
+    -fx-border-color: #4a8069;
+    -fx-border-width: 1.5px;
+    -fx-background-color: #fffefa;
+}
+
+.primary-button {
+    -fx-background-color: #2f6b55;
+    -fx-background-radius: 10px;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 13px 22px;
+    -fx-cursor: hand;
+}
+
+.primary-button:hover {
+    -fx-background-color: #245541;
+    -fx-effect: dropshadow(gaussian, rgba(37, 85, 65, 0.22), 12, 0.1, 0, 3);
+}
+
+.nav-join-button {
+    -fx-background-color: #2f6b55;
+    -fx-background-radius: 9px;
+    -fx-text-fill: #fffefa;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 9px 16px;
+    -fx-cursor: hand;
+}
+
+.nav-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #456453;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-padding: 9px 12px;
+    -fx-cursor: hand;
+}
+
+.nav-button:hover, .text-button:hover {
+    -fx-text-fill: #b87543;
+}
+
+.text-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #2f6b55;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.message-label {
+    -fx-text-fill: #527262;
+    -fx-font-size: 12px;
+    -fx-alignment: center;
+}
+
+.error-message {
+    -fx-text-fill: #a74136;
+}
+
+.secure-note {
+    -fx-text-fill: #829087;
+    -fx-font-size: 11px;
+}

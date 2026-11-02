@@ -30,7 +30,7 @@ public final class AuthService {
             String name,
             String email,
             String contactInfo,
-            UserType userType,
+            UserFactory userFactory,
             String organization,
             char[] password) throws SQLException {
         try {
@@ -48,8 +48,12 @@ public final class AuthService {
             if (cleanContact.length() > 255) {
                 throw new IllegalArgumentException("Contact information must be 255 characters or fewer.");
             }
-            if (userType == null) {
+            if (userFactory == null) {
                 throw new IllegalArgumentException("Choose an account type.");
+            }
+            if (userFactory.getUserType() != UserType.DONOR
+                    && userFactory.getUserType() != UserType.VOLUNTEER) {
+                throw new IllegalArgumentException("Staff accounts cannot be created through sign-up.");
             }
             if (cleanOrganization.length() > 200) {
                 throw new IllegalArgumentException("Organization name must be 200 characters or fewer.");
@@ -58,8 +62,8 @@ public final class AuthService {
                 throw new IllegalArgumentException("Your password must be between 10 and 128 characters.");
             }
 
-            User user = UserFactory.createUser(
-                    userType, cleanName, cleanEmail, cleanContact, cleanOrganization);
+            User user = userFactory.createUser(
+                    cleanName, cleanEmail, cleanContact, cleanOrganization);
             userRepository.create(user, passwordHasher.hash(password));
         } finally {
             if (password != null) {

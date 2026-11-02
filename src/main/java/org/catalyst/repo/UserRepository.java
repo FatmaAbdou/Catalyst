@@ -1,9 +1,16 @@
 package org.catalyst.repo;
 
 import org.catalyst.model.Donor;
+import org.catalyst.model.AdministratorFactory;
+import org.catalyst.model.BeneficiaryOfficerFactory;
+import org.catalyst.model.DonationOfficerFactory;
+import org.catalyst.model.DonorFactory;
+import org.catalyst.model.EventOrganizerFactory;
 import org.catalyst.model.User;
-import org.catalyst.model.UserFactory;
 import org.catalyst.model.UserType;
+import org.catalyst.model.UserFactory;
+import org.catalyst.model.VolunteerCoordinatorFactory;
+import org.catalyst.model.VolunteerFactory;
 import org.catalyst.model.Volunteer;
 import org.catalyst.service.PasswordHasher;
 
@@ -83,8 +90,8 @@ public final class UserRepository {
             if (userType.isEmpty()) {
                 return Optional.empty();
             }
-            User user = UserFactory.createUser(
-                    userType.get(), name, storedEmail, contactInfo, organization);
+            UserFactory userFactory = factoryFor(userType.get());
+            User user = userFactory.createUser(name, storedEmail, contactInfo, organization);
             user.setId(userId);
             return Optional.of(user);
         }
@@ -154,8 +161,7 @@ public final class UserRepository {
                 SELECT r.role_name
                 FROM roles r
                 JOIN user_roles ur ON ur.role_id = r.role_id
-                WHERE ur.user_id = ? AND r.role_name IN ('DONOR', 'VOLUNTEER')
-                ORDER BY r.role_name
+                WHERE ur.user_id = ?
                 LIMIT 1
                 """;
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -171,5 +177,17 @@ public final class UserRepository {
                 }
             }
         }
+    }
+
+    private UserFactory factoryFor(UserType type) {
+        return switch (type) {
+            case DONOR -> new DonorFactory();
+            case VOLUNTEER -> new VolunteerFactory();
+            case DONATION_OFFICER -> new DonationOfficerFactory();
+            case VOLUNTEER_COORDINATOR -> new VolunteerCoordinatorFactory();
+            case EVENT_ORGANIZER -> new EventOrganizerFactory();
+            case BENEFICIARY_OFFICER -> new BeneficiaryOfficerFactory();
+            case ADMINISTRATOR -> new AdministratorFactory();
+        };
     }
 }

@@ -17,4 +17,5 @@ public final class Donor extends User {
     public UserType getUserType() {
         return UserType.DONOR;
     }
+
 }

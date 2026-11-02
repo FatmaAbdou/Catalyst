@@ -1,9 +1,14 @@
 package org.catalyst.model;
 
-/** Account types that a new user can choose during sign-up. */
+/** Account roles represented in the class diagram and database. */
 public enum UserType {
     DONOR,
-    VOLUNTEER;
+    VOLUNTEER,
+    DONATION_OFFICER,
+    VOLUNTEER_COORDINATOR,
+    EVENT_ORGANIZER,
+    BENEFICIARY_OFFICER,
+    ADMINISTRATOR;
 
     @Override
     public String toString() {

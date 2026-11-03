@@ -9,6 +9,15 @@ import org.catalyst.repo.DatabaseConnection;
 public class DatabaseConnectionTest {
 
     public static void main(String[] args) {
+        for (String variable : new String[]{"DB_HOST", "DB_NAME", "DB_USER", "DB_PASSWORD"}) {
+            String value = System.getenv(variable);
+            if (value == null || value.isBlank()) {
+                System.err.println("Database configuration is incomplete. "
+                        + "Use the VS Code database launch configuration to load .env, "
+                        + "or set DB_HOST, DB_NAME, DB_USER and DB_PASSWORD in your environment.");
+                return;
+            }
+        }
         try {
             var connection = DatabaseConnection.getInstance().getConnection();
             try (Statement statement = connection.createStatement();

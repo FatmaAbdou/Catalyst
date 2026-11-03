@@ -3,6 +3,7 @@ package org.catalyst.controller;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import org.catalyst.model.Volunteer;
 import org.catalyst.view.SceneManager;
 
 import java.io.IOException;
@@ -20,6 +21,7 @@ public final class WelcomeController {
     @FXML private Button topSignUpButton;
     @FXML private Button logInButton;
     @FXML private Button logOutButton;
+    @FXML private Button volunteerButton;
 
     public WelcomeController(SceneManager sceneManager) {
         this.sceneManager = sceneManager;
@@ -36,6 +38,7 @@ public final class WelcomeController {
         setShown(topSignUpButton, !signedIn);
         setShown(logInButton, !signedIn);
         setShown(logOutButton, signedIn);
+        setShown(volunteerButton, user instanceof Volunteer);
     }
 
     @FXML
@@ -52,6 +55,11 @@ public final class WelcomeController {
     private void logOut() {
         sceneManager.setCurrentUser(null);
         navigate(sceneManager::showWelcome);
+    }
+
+    @FXML
+    private void openVolunteerDashboard() {
+        navigate(sceneManager::showVolunteerDashboard);
     }
 
     private void navigate(ViewAction action) {

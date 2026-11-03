@@ -4,6 +4,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import org.catalyst.model.Volunteer;
 import org.catalyst.service.AuthService;
 import org.catalyst.view.SceneManager;
 
@@ -39,7 +40,11 @@ public final class LoginController {
                 return;
             }
             sceneManager.setCurrentUser(user.get());
-            sceneManager.showWelcome();
+            if (user.get() instanceof Volunteer) {
+                sceneManager.showVolunteerDashboard();
+            } else {
+                sceneManager.showWelcome();
+            }
         } catch (SQLException exception) {
             LOGGER.log(Level.SEVERE, "Could not check the login credentials.", exception);
             showMessage("We could not log you in right now. Please try again.");

@@ -1,9 +1,4 @@
-package org.catalyst.service;
-
-import org.catalyst.model.Certificate;
-import org.catalyst.model.ParticipateCertificate;
-import org.catalyst.model.Volunteer;
-import org.catalyst.model.VolunteerTask;
+package org.catalyst.model;
 
 public final class ParticipationCertificateFactory extends CertificateFactory {
     @Override

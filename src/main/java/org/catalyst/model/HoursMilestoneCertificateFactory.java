@@ -1,9 +1,4 @@
-package org.catalyst.service;
-
-import org.catalyst.model.Certificate;
-import org.catalyst.model.HoursMilestoneCertificate;
-import org.catalyst.model.Volunteer;
-import org.catalyst.model.VolunteerTask;
+package org.catalyst.model;
 
 public final class HoursMilestoneCertificateFactory extends CertificateFactory {
     @Override

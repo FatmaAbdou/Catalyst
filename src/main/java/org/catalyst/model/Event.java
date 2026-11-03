@@ -15,10 +15,58 @@ public abstract class Event {
     float ticketPrice;
     EventStatus status;
 
-    public void validateDetails(){
+    protected Event(EventDetails details) {
+        this.name = details.name();
+        this.description = details.description();
+        this.location = details.location();
+        this.date = details.date();
+        this.startTime = details.startTime();
+        this.endTime = details.endTime();
+        this.capacity = details.capacity();
+        this.ticketPrice = details.ticketPrice();
+        this.status = EventStatus.UPCOMING;
+    }
 
-    };
-    public void validateParticipant(User user){
+    public Date getDate() {
+        return date;
+    }
 
-    };
+    public EventStatus getStatus() {
+        return status;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public Time getStartTime() {
+        return startTime;
+    }
+    public Time getEndTime() {
+        return endTime;
+    }
+
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public float getTicketPrice() {
+        return ticketPrice;
+    }
+
+
+    //    public void validateDetails(){
+//
+//    };
+//    public void validateParticipant(User user){
+//
+//    };
 }

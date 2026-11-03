@@ -1,4 +1,4 @@
-package org.catalyst.model;
+package org.catalyst.model.user;
 
 /** Creates administrator accounts. */
 public final class AdministratorFactory extends UserFactory {

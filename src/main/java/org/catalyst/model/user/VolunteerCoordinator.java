@@ -1,4 +1,4 @@
-package org.catalyst.model;
+package org.catalyst.model.user;
 
 /** Staff account responsible for coordinating volunteers. */
 public final class VolunteerCoordinator extends User {

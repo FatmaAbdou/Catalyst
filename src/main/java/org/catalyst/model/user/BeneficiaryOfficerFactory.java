@@ -1,4 +1,4 @@
-package org.catalyst.model;
+package org.catalyst.model.user;
 
 /** Creates beneficiary officer accounts. */
 public final class BeneficiaryOfficerFactory extends UserFactory {

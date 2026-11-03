@@ -1,4 +1,4 @@
-package org.catalyst.model;
+package org.catalyst.model.user;
 
 /** Staff account responsible for beneficiary assistance records. */
 public final class BeneficiaryOfficer extends User {

@@ -1,4 +1,4 @@
-package org.catalyst.model;
+package org.catalyst.model.user;
 
 /** Creates event organizer accounts. */
 public final class EventOrganizerFactory extends UserFactory {

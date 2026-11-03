@@ -6,10 +6,12 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
-import org.catalyst.model.DonorFactory;
-import org.catalyst.model.UserFactory;
-import org.catalyst.model.UserType;
-import org.catalyst.model.VolunteerFactory;
+
+import org.catalyst.model.user.DonationOfficerFactory;
+import org.catalyst.model.user.DonorFactory;
+import org.catalyst.model.user.UserFactory;
+import org.catalyst.model.user.UserType;
+import org.catalyst.model.user.VolunteerFactory;
 import org.catalyst.service.AuthService;
 import org.catalyst.view.SceneManager;
 
@@ -43,7 +45,7 @@ public final class SignUpController {
 
     @FXML
     private void initialize() {
-        userTypeBox.getItems().setAll(UserType.DONOR, UserType.VOLUNTEER);
+        userTypeBox.getItems().setAll(UserType.DONOR, UserType.VOLUNTEER, UserType.DONATION_OFFICER);
         userTypeBox.setValue(UserType.VOLUNTEER);
         updateOrganizationVisibility();
         userTypeBox.valueProperty().addListener((observable, oldValue, newValue) ->
@@ -62,6 +64,7 @@ public final class SignUpController {
             UserFactory userFactory = switch (userTypeBox.getValue()) {
                 case DONOR -> new DonorFactory();
                 case VOLUNTEER -> new VolunteerFactory();
+                case DONATION_OFFICER -> new DonationOfficerFactory();
                 case null -> throw new IllegalArgumentException("Choose an account type.");
                 default -> throw new IllegalArgumentException("Choose a public account type.");
             };

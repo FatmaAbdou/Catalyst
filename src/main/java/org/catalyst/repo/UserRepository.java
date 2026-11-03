@@ -1,17 +1,17 @@
 package org.catalyst.repo;
 
-import org.catalyst.model.Donor;
-import org.catalyst.model.AdministratorFactory;
-import org.catalyst.model.BeneficiaryOfficerFactory;
-import org.catalyst.model.DonationOfficerFactory;
-import org.catalyst.model.DonorFactory;
-import org.catalyst.model.EventOrganizerFactory;
-import org.catalyst.model.User;
-import org.catalyst.model.UserType;
-import org.catalyst.model.UserFactory;
-import org.catalyst.model.VolunteerCoordinatorFactory;
-import org.catalyst.model.VolunteerFactory;
-import org.catalyst.model.Volunteer;
+import org.catalyst.model.user.AdministratorFactory;
+import org.catalyst.model.user.BeneficiaryOfficerFactory;
+import org.catalyst.model.user.DonationOfficerFactory;
+import org.catalyst.model.user.Donor;
+import org.catalyst.model.user.DonorFactory;
+import org.catalyst.model.user.EventOrganizerFactory;
+import org.catalyst.model.user.User;
+import org.catalyst.model.user.UserFactory;
+import org.catalyst.model.user.UserType;
+import org.catalyst.model.user.Volunteer;
+import org.catalyst.model.user.VolunteerCoordinatorFactory;
+import org.catalyst.model.user.VolunteerFactory;
 import org.catalyst.service.PasswordHasher;
 
 import java.sql.Connection;

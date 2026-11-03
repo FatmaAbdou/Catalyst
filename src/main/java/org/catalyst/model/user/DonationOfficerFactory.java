@@ -1,4 +1,4 @@
-package org.catalyst.model;
+package org.catalyst.model.user;
 
 /** Creates donation officer accounts. */
 public final class DonationOfficerFactory extends UserFactory {

@@ -1,4 +1,4 @@
-package org.catalyst.model;
+package org.catalyst.model.user;
 
 /** Account roles represented in the class diagram and database. */
 public enum UserType {

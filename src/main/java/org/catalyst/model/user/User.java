@@ -1,4 +1,4 @@
-package org.catalyst.model;
+package org.catalyst.model.user;
 
 /** Shared details for the account types available on the sign-up page. */
 public abstract class User {

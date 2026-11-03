@@ -4,9 +4,12 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import org.catalyst.model.User;
+
+import org.catalyst.model.user.User;
+import org.catalyst.repo.DonationRepository;
 import org.catalyst.repo.UserRepository;
 import org.catalyst.service.AuthService;
+import org.catalyst.service.DonationService;
 import org.catalyst.service.PasswordHasher;
 
 import java.io.IOException;
@@ -17,6 +20,7 @@ public final class SceneManager {
     private final Stage stage;
     private Scene scene;
     private final AuthService authService = new AuthService(new UserRepository(), new PasswordHasher());
+    private final DonationService donationService = new DonationService(new DonationRepository());
     private User currentUser;
 
     public SceneManager(Stage stage) {
@@ -25,6 +29,10 @@ public final class SceneManager {
 
     public AuthService getAuthService() {
         return authService;
+    }
+
+    public DonationService getDonationService() {
+        return donationService;
     }
 
     public User getCurrentUser() {
@@ -45,6 +53,10 @@ public final class SceneManager {
 
     public void showLogin() throws IOException {
         show("login.fxml");
+    }
+
+    public void showDonation() throws IOException {
+        show("donation.fxml");
     }
 
     private void show(String fileName) throws IOException {

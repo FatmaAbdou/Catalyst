@@ -1,4 +1,4 @@
-package org.catalyst.model;
+package org.catalyst.model.user;
 
 /** Creates volunteer accounts. */
 public final class VolunteerFactory extends UserFactory {

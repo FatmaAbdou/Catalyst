@@ -1,4 +1,4 @@
-package org.catalyst.model;
+package org.catalyst.model.user;
 
 /** Staff account responsible for organizing events. */
 public final class EventOrganizer extends User {

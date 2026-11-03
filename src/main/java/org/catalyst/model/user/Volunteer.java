@@ -1,4 +1,4 @@
-package org.catalyst.model;
+package org.catalyst.model.user;
 
 /** A volunteer account, with preferences collected later in the volunteer workflow. */
 public final class Volunteer extends User {

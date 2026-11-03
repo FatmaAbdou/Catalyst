@@ -1,4 +1,4 @@
-package org.catalyst.model;
+package org.catalyst.model.user;
 
 /** A donor account may represent an individual or an organization. */
 public final class Donor extends User {

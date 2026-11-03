@@ -1,4 +1,4 @@
-package org.catalyst.model;
+package org.catalyst.model.user;
 
 /** Staff account with administrative responsibilities. */
 public final class Administrator extends User {

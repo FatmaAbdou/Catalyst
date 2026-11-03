@@ -222,3 +222,21 @@
     -fx-text-fill: #829087;
     -fx-font-size: 11px;
 }
+
+.success-message {
+    -fx-text-fill: #2f6b55;
+}
+
+.receipt-area {
+    -fx-font-family: "Consolas", "Courier New", monospace;
+    -fx-font-size: 12px;
+    -fx-background-color: #f8f9f5;
+    -fx-background-radius: 10px;
+    -fx-border-color: #e0e5dc;
+    -fx-border-radius: 10px;
+}
+
+.receipt-area .content {
+    -fx-background-color: #f8f9f5;
+    -fx-background-radius: 10px;
+}

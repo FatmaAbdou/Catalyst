@@ -1,4 +1,4 @@
-package org.catalyst.model;
+package org.catalyst.model.user;
 
 /** Base creator in the Factory Method pattern. */
 public abstract class UserFactory {

@@ -20,6 +20,7 @@ public final class WelcomeController {
     @FXML private Button topSignUpButton;
     @FXML private Button logInButton;
     @FXML private Button logOutButton;
+    @FXML private Button donateButton;
 
     public WelcomeController(SceneManager sceneManager) {
         this.sceneManager = sceneManager;
@@ -36,6 +37,7 @@ public final class WelcomeController {
         setShown(topSignUpButton, !signedIn);
         setShown(logInButton, !signedIn);
         setShown(logOutButton, signedIn);
+        setShown(donateButton, sceneManager.getDonationService().canDonate(user));
     }
 
     @FXML
@@ -46,6 +48,11 @@ public final class WelcomeController {
     @FXML
     private void openLogin() {
         navigate(sceneManager::showLogin);
+    }
+
+    @FXML
+    private void openDonation() {
+        navigate(sceneManager::showDonation);
     }
 
     @FXML

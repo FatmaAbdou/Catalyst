@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<BorderPane xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.catalyst.controller.CoordinatorController"
+            styleClass="page">
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="top-bar">
+            <padding><Insets top="14" right="36" bottom="14" left="36"/></padding>
+            <Button text="←  Home" onAction="#goHome" styleClass="nav-button"/>
+            <Label text="✿" styleClass="brand-mark"/>
+            <Label text="catalyst" styleClass="brand"/>
+            <HBox HBox.hgrow="ALWAYS"/>
+            <Button text="Log out" onAction="#logOut" styleClass="nav-button"/>
+        </HBox>
+    </top>
+    <center>
+        <VBox spacing="16" styleClass="volunteer-page">
+            <padding><Insets top="24" right="36" bottom="24" left="36"/></padding>
+            <VBox spacing="6">
+                <Label fx:id="greetingLabel" text="Hello, coordinator" styleClass="form-title"/>
+                <Label text="Create useful tasks and connect volunteers with community events."
+                       styleClass="body-copy"/>
+            </VBox>
+            <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS" styleClass="dashboard-tabs">
+                <tabs>
+                    <Tab text="Create task">
+                        <content>
+                            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="form-scroll">
+                                <content>
+                                    <VBox spacing="12" styleClass="form-card">
+                                        <padding><Insets top="22" right="28" bottom="28" left="28"/></padding>
+                                        <Label text="Create a volunteer task" styleClass="section-title"/>
+                                        <Label text="Event (optional)" styleClass="field-label"/>
+                                        <ComboBox fx:id="eventBox" promptText="No linked event"
+                                                  maxWidth="Infinity" styleClass="input-field"/>
+                                        <Label text="Task description" styleClass="field-label"/>
+                                        <TextArea fx:id="taskDescriptionField" promptText="What should volunteers do?"
+                                                  prefRowCount="3" wrapText="true" styleClass="text-area"/>
+                                        <Label text="Schedule" styleClass="field-label"/>
+                                        <DatePicker fx:id="taskDatePicker" maxWidth="Infinity" styleClass="input-field"/>
+                                        <HBox spacing="8">
+                                            <ComboBox fx:id="taskStartBox" promptText="Start"
+                                                      maxWidth="Infinity" HBox.hgrow="ALWAYS" styleClass="input-field"/>
+                                            <ComboBox fx:id="taskEndBox" promptText="End"
+                                                      maxWidth="Infinity" HBox.hgrow="ALWAYS" styleClass="input-field"/>
+                                        </HBox>
+                                        <Label text="Required skills (optional; select multiple)" styleClass="field-label"/>
+                                        <Label text="Click each skill to include it in the task." styleClass="small-copy"/>
+                                        <ScrollPane fitToWidth="true" prefHeight="145" styleClass="activity-list">
+                                            <content><VBox fx:id="requiredSkillsBox" spacing="6"/></content>
+                                        </ScrollPane>
+                                        <Label text="Number of volunteer places" styleClass="field-label"/>
+                                        <TextField fx:id="volunteerLimitField" promptText="e.g. 4" styleClass="input-field"/>
+                                        <Button text="Create task  →" onAction="#createTask" styleClass="primary-button"/>
+                                    </VBox>
+                                </content>
+                            </ScrollPane>
+                        </content>
+                    </Tab>
+                    <Tab text="Assignments">
+                        <content>
+                            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="form-scroll">
+                                <content>
+                                    <VBox spacing="12" styleClass="form-card">
+                                        <padding><Insets top="22" right="28" bottom="28" left="28"/></padding>
+                                        <Label text="Choose a task" styleClass="section-title"/>
+                                        <ListView fx:id="taskList" prefHeight="125" styleClass="activity-list"/>
+                                        <Button text="Delete selected task" onAction="#deleteTask" styleClass="danger-button"/>
+                                        <Label text="Find a suitable volunteer" styleClass="section-title"/>
+                                        <HBox spacing="8">
+                                            <TextField fx:id="searchField" promptText="Search by volunteer name"
+                                                       onAction="#searchVolunteers"
+                                                       HBox.hgrow="ALWAYS" styleClass="input-field"/>
+                                            <Button text="Search" onAction="#searchVolunteers" styleClass="secondary-button"/>
+                                        </HBox>
+                                        <HBox spacing="8">
+                                            <ComboBox fx:id="skillFilterBox" promptText="Filter by skill"
+                                                      HBox.hgrow="ALWAYS" styleClass="input-field"/>
+                                            <ComboBox fx:id="availabilityFilterBox" promptText="Availability"
+                                                      HBox.hgrow="ALWAYS" styleClass="input-field"/>
+                                        </HBox>
+                                        <ListView fx:id="volunteerList" prefHeight="210" styleClass="activity-list"/>
+                                        <Label fx:id="selectedVolunteerInfoLabel" text="Select a volunteer to view preferences."
+                                               wrapText="true" styleClass="small-copy"/>
+                                        <Button fx:id="assignButton" text="Assign selected volunteer to task"
+                                                onAction="#assignVolunteer"
+                                                styleClass="secondary-button"/>
+                                        <Label text="Current assignments" styleClass="field-label"/>
+                                        <ListView fx:id="assignmentList" prefHeight="150" styleClass="activity-list"/>
+                                        <HBox spacing="8">
+                                            <Button text="Unassign" onAction="#unassignVolunteer" styleClass="nav-button"/>
+                                            <Button text="Delete assignment" onAction="#deleteAssignment" styleClass="danger-button"/>
+                                        </HBox>
+                                    </VBox>
+                                </content>
+                            </ScrollPane>
+                        </content>
+                    </Tab>
+                    <Tab text="Full schedule">
+                        <content>
+                            <VBox spacing="12" styleClass="form-card">
+                                <padding><Insets top="22" right="28" bottom="28" left="28"/></padding>
+                                <Label text="Full volunteer task schedule" styleClass="section-title"/>
+                                <HBox spacing="8">
+                                    <ComboBox fx:id="scheduleTaskFilterBox" promptText="All tasks"
+                                              HBox.hgrow="ALWAYS" styleClass="input-field"/>
+                                    <ComboBox fx:id="scheduleVolunteerFilterBox" promptText="All volunteers"
+                                              HBox.hgrow="ALWAYS" styleClass="input-field"/>
+                                    <Button text="Clear filters" onAction="#clearScheduleFilters"
+                                            styleClass="nav-button"/>
+                                </HBox>
+                                <TableView fx:id="scheduleTable" VBox.vgrow="ALWAYS"
+                                           styleClass="schedule-table">
+                                    <columns>
+                                        <TableColumn fx:id="scheduleTaskColumn" text="Task" prefWidth="240"/>
+                                        <TableColumn fx:id="scheduleVolunteerColumn" text="Volunteer" prefWidth="170"/>
+                                        <TableColumn fx:id="scheduleDateColumn" text="Date" prefWidth="120"/>
+                                        <TableColumn fx:id="scheduleStartColumn" text="Start" prefWidth="90"/>
+                                        <TableColumn fx:id="scheduleEndColumn" text="End" prefWidth="90"/>
+                                    </columns>
+                                </TableView>
+                                <Label text="Hover over a row to see task details." styleClass="small-copy"/>
+                            </VBox>
+                        </content>
+                    </Tab>
+                    <Tab text="Service hours">
+                        <content>
+                            <VBox spacing="12" styleClass="form-card">
+                                <padding><Insets top="22" right="28" bottom="28" left="28"/></padding>
+                                <Label text="Service hours awaiting approval" styleClass="section-title"/>
+                                <ListView fx:id="pendingHoursList" VBox.vgrow="ALWAYS" styleClass="activity-list"/>
+                                <Button text="Approve selected hours" onAction="#approveHours" styleClass="primary-button"/>
+                            </VBox>
+                        </content>
+                    </Tab>
+                    <Tab text="Certificates">
+                        <content>
+                            <VBox spacing="12" styleClass="form-card">
+                                <padding><Insets top="22" right="28" bottom="28" left="28"/></padding>
+                                <Label text="Generate a volunteer certificate" styleClass="section-title"/>
+                                <Label text="Select a volunteer from the Assignments tab first."
+                                       styleClass="small-copy" wrapText="true"/>
+                                <ComboBox fx:id="certificateTypeBox" promptText="Certificate type"
+                                          maxWidth="Infinity" styleClass="input-field"/>
+                                <ComboBox fx:id="certificateTaskBox" promptText="Approved participation task"
+                                          maxWidth="Infinity" styleClass="input-field"/>
+                                <TextArea fx:id="certificateMessageField"
+                                          promptText="Personal appreciation message (for appreciation certificates)"
+                                          prefRowCount="3" wrapText="true" styleClass="text-area"/>
+                                <Button text="Generate certificate  →" onAction="#generateCertificate"
+                                        styleClass="secondary-button"/>
+                            </VBox>
+                        </content>
+                    </Tab>
+                </tabs>
+            </TabPane>
+            <Label fx:id="messageLabel" minHeight="22" wrapText="true" styleClass="message-label"/>
+        </VBox>
+    </center>
+</BorderPane>

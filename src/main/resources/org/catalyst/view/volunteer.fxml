@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.catalyst.controller.VolunteerController" styleClass="page">
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="top-bar">
+            <padding><Insets top="14" right="36" bottom="14" left="36"/></padding>
+            <Button text="←  Home" onAction="#goHome" styleClass="nav-button"/>
+            <Label text="✿" styleClass="brand-mark"/>
+            <Label text="catalyst" styleClass="brand"/>
+            <HBox HBox.hgrow="ALWAYS"/>
+            <Button text="Log out" onAction="#logOut" styleClass="nav-button"/>
+        </HBox>
+    </top>
+    <center>
+        <VBox spacing="18" styleClass="volunteer-page">
+            <padding><Insets top="24" right="36" bottom="30" left="36"/></padding>
+            <VBox spacing="6">
+                <Label fx:id="greetingLabel" text="Hello, volunteer" styleClass="form-title"/>
+                <Label text="Your time and skills help the community thrive." styleClass="body-copy"/>
+            </VBox>
+            <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS" styleClass="dashboard-tabs">
+                <tabs>
+                    <Tab text="My profile">
+                        <content>
+                            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="form-scroll">
+                                <content>
+                                    <VBox spacing="14" styleClass="form-card">
+                                        <padding><Insets top="22" right="28" bottom="28" left="28"/></padding>
+                                        <Label text="Your volunteer profile" styleClass="section-title"/>
+                                        <Label text="Choose your skills and weekly availability." styleClass="small-copy"/>
+                                        <Label text="Skills" styleClass="field-label"/>
+                                        <MenuButton fx:id="skillsMenuButton" text="Choose skills"
+                                                    maxWidth="Infinity" styleClass="input-field"/>
+                                        <ListView fx:id="selectedSkillsList" prefHeight="105" styleClass="activity-list"/>
+                                        <HBox alignment="CENTER_LEFT" spacing="8">
+                                            <ComboBox fx:id="skillLevelBox" promptText="Proficiency level"
+                                                      HBox.hgrow="ALWAYS" styleClass="input-field"/>
+                                            <Button text="Set level" onAction="#updateSkillLevel"
+                                                    styleClass="secondary-button"/>
+                                        </HBox>
+                                        <Button text="Remove selected skill" onAction="#removeSkill" styleClass="nav-button"/>
+                                        <Label text="Weekly availability" styleClass="field-label"/>
+                                        <ComboBox fx:id="dayBox" promptText="Choose a day"
+                                                  maxWidth="Infinity" styleClass="input-field"/>
+                                        <HBox alignment="CENTER_LEFT" spacing="8">
+                                            <ComboBox fx:id="startTimeBox" promptText="Start"
+                                                      HBox.hgrow="ALWAYS" styleClass="input-field"/>
+                                            <ComboBox fx:id="endTimeBox" promptText="End"
+                                                      HBox.hgrow="ALWAYS" styleClass="input-field"/>
+                                            <Button text="Add" onAction="#addAvailability" styleClass="secondary-button"/>
+                                        </HBox>
+                                        <ListView fx:id="availabilityList" prefHeight="145" styleClass="activity-list"/>
+                                        <Button text="Remove selected time" onAction="#removeAvailability" styleClass="nav-button"/>
+                                        <Label text="Preferences" styleClass="field-label"/>
+                                        <TextArea fx:id="preferencesField"
+                                                  promptText="What kind of volunteering interests you?"
+                                                  prefRowCount="3" wrapText="true" styleClass="text-area"/>
+                                        <Label text="Preferred notification channel" styleClass="field-label"/>
+                                        <ComboBox fx:id="channelBox" maxWidth="Infinity" styleClass="input-field"/>
+                                        <Button text="Save my details  →" onAction="#saveProfile" styleClass="primary-button"/>
+                                    </VBox>
+                                </content>
+                            </ScrollPane>
+                        </content>
+                    </Tab>
+                    <Tab text="Assignments &amp; hours">
+                        <content>
+                            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" styleClass="form-scroll">
+                                <content>
+                                    <VBox spacing="14" styleClass="form-card">
+                                        <padding><Insets top="22" right="28" bottom="28" left="28"/></padding>
+                                        <Label text="My assignments" styleClass="section-title"/>
+                                        <ListView fx:id="assignmentsList" prefHeight="190" styleClass="activity-list"/>
+                                        <Label fx:id="hoursLimitLabel" text="Select an assignment to see its hour limit."
+                                               styleClass="small-copy" wrapText="true"/>
+                                        <Label text="Log service hours for the selected assignment" styleClass="field-label"/>
+                                        <HBox spacing="8">
+                                            <DatePicker fx:id="hoursDatePicker" HBox.hgrow="ALWAYS" styleClass="input-field"/>
+                                            <TextField fx:id="hoursAmountField" promptText="Hours"
+                                                       prefWidth="100" styleClass="input-field"/>
+                                        </HBox>
+                                        <Button fx:id="logHoursButton" text="Submit hours for approval"
+                                                onAction="#logServiceHours"
+                                                styleClass="secondary-button"/>
+                                        <Label text="My submitted service hours" styleClass="section-title"/>
+                                        <ListView fx:id="hoursList" prefHeight="190" styleClass="activity-list"/>
+                                    </VBox>
+                                </content>
+                            </ScrollPane>
+                        </content>
+                    </Tab>
+                    <Tab text="My schedule">
+                        <content>
+                            <VBox spacing="12" styleClass="form-card">
+                                <padding><Insets top="22" right="28" bottom="28" left="28"/></padding>
+                                <Label text="Your assigned task schedule" styleClass="section-title"/>
+                                <TableView fx:id="scheduleTable" VBox.vgrow="ALWAYS"
+                                           styleClass="schedule-table">
+                                    <columns>
+                                        <TableColumn fx:id="scheduleTaskColumn" text="Task" prefWidth="250"/>
+                                        <TableColumn fx:id="scheduleDateColumn" text="Date" prefWidth="125"/>
+                                        <TableColumn fx:id="scheduleStartColumn" text="Start" prefWidth="100"/>
+                                        <TableColumn fx:id="scheduleEndColumn" text="End" prefWidth="100"/>
+                                    </columns>
+                                </TableView>
+                                <Label text="Hover over a task to see its details." styleClass="small-copy"/>
+                            </VBox>
+                        </content>
+                    </Tab>
+                    <Tab text="">
+                        <graphic>
+                            <HBox alignment="CENTER" spacing="7">
+                                <Label text="Notifications"/>
+                                <Label fx:id="notificationCountLabel" text="0"
+                                       styleClass="notification-badge"/>
+                            </HBox>
+                        </graphic>
+                        <content>
+                            <VBox spacing="12" styleClass="form-card">
+                                <padding><Insets top="22" right="28" bottom="28" left="28"/></padding>
+                                <Label text="Assignment notifications" styleClass="section-title"/>
+                                <ListView fx:id="notificationsList" VBox.vgrow="ALWAYS"
+                                          styleClass="activity-list"/>
+                                <Label fx:id="notificationDetailsLabel" text="Select a notification to see its task details."
+                                       wrapText="true" styleClass="body-copy"/>
+                                <Button text="Mark selected as read" onAction="#markNotificationRead"
+                                        styleClass="secondary-button"/>
+                            </VBox>
+                        </content>
+                    </Tab>
+                    <Tab text="Certificates">
+                        <content>
+                            <VBox spacing="14" styleClass="form-card">
+                                <padding><Insets top="22" right="28" bottom="28" left="28"/></padding>
+                                <Label text="Your certificates" styleClass="section-title"/>
+                                <Label fx:id="approvedHoursLabel" text="Approved hours: 0"
+                                       styleClass="small-copy"/>
+                                <Label text="Participation certificates are available for tasks with approved service hours."
+                                       styleClass="body-copy" wrapText="true"/>
+                                <ListView fx:id="certificateTasksList" prefHeight="210" styleClass="activity-list"/>
+                                <ComboBox fx:id="certificateTypeBox" promptText="Choose certificate type"
+                                          maxWidth="Infinity" styleClass="input-field"/>
+                                <Label fx:id="certificateInfoLabel" styleClass="small-copy" wrapText="true"/>
+                                <Button fx:id="downloadCertificateButton" text="Download certificate  →"
+                                        onAction="#downloadCertificate"
+                                        styleClass="primary-button"/>
+                            </VBox>
+                        </content>
+                    </Tab>
+                </tabs>
+            </TabPane>
+            <Label fx:id="messageLabel" minHeight="22" wrapText="true" styleClass="message-label"/>
+        </VBox>
+    </center>
+</BorderPane>

@@ -22,6 +22,7 @@
                     visible="false"
                     managed="false"
                     styleClass="nav-button"/>
+            <Button fx:id="volunteerButton" text="My volunteering" onAction="#openVolunteerDashboard" styleClass="nav-button"/>
             <Button fx:id="logOutButton" text="Log out" onAction="#logOut" styleClass="nav-button"/>
         </HBox>
     </top>

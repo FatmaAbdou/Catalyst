@@ -7,10 +7,15 @@ import javafx.stage.Stage;
 import org.catalyst.model.Beneficiary;
 import org.catalyst.model.User;
 import org.catalyst.model.UserType;
+import org.catalyst.model.Volunteer;
 import org.catalyst.repo.UserRepository;
+import org.catalyst.repo.VolunteerRepository;
+import org.catalyst.service.AssignmentService;
 import org.catalyst.service.AuthService;
 import org.catalyst.service.BeneficiaryService;
 import org.catalyst.service.PasswordHasher;
+import org.catalyst.service.VolunteerService;
+import org.catalyst.service.VolunteerNotificationObserver;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -21,12 +26,16 @@ public final class SceneManager {
     private Scene scene;
     private final AuthService authService = new AuthService(new UserRepository(), new PasswordHasher());
     private final BeneficiaryService beneficiaryService = new BeneficiaryService();
+    private final VolunteerRepository volunteerRepository = new VolunteerRepository();
+    private final VolunteerService volunteerService = new VolunteerService(volunteerRepository);
+    private final AssignmentService assignmentService = new AssignmentService(volunteerRepository);
     private User currentUser;
     private Beneficiary selectedBeneficiary;
     private boolean beneficiaryFormReturnsToDetails;
 
     public SceneManager(Stage stage) {
         this.stage = stage;
+        assignmentService.addObserver(new VolunteerNotificationObserver(volunteerRepository));
     }
 
     public AuthService getAuthService() {
@@ -42,6 +51,18 @@ public final class SceneManager {
                 && currentUser.getId() > 0
                 && currentUser.getUserType()
                         == UserType.BENEFICIARY_OFFICER;
+    }
+
+    public Stage getStage() {
+        return stage;
+    }
+
+    public VolunteerService getVolunteerService() {
+        return volunteerService;
+    }
+
+    public AssignmentService getAssignmentService() {
+        return assignmentService;
     }
 
     public User getCurrentUser() {
@@ -134,6 +155,14 @@ public final class SceneManager {
         if (!canManageBeneficiaries()) {
             throw new SecurityException("Sign in with a beneficiary officer account.");
         }
+    }
+
+    public void showVolunteerDashboard() throws IOException {
+        show("volunteer.fxml");
+    }
+
+    public void showCoordinatorDashboard() throws IOException {
+        show("coordinator.fxml");
     }
 
     private void show(String fileName) throws IOException {

@@ -1,7 +1,7 @@
 package org.catalyst.repo;
 
+import org.catalyst.model.beneficiary.BeneficiaryOfficerFactory;
 import org.catalyst.model.user.AdministratorFactory;
-import org.catalyst.model.user.BeneficiaryOfficerFactory;
 import org.catalyst.model.user.DonationOfficerFactory;
 import org.catalyst.model.user.Donor;
 import org.catalyst.model.user.DonorFactory;
@@ -9,7 +9,6 @@ import org.catalyst.model.user.EventOrganizerFactory;
 import org.catalyst.model.user.User;
 import org.catalyst.model.user.UserFactory;
 import org.catalyst.model.user.UserType;
-import org.catalyst.model.user.Volunteer;
 import org.catalyst.model.user.VolunteerCoordinatorFactory;
 import org.catalyst.model.user.VolunteerFactory;
 import org.catalyst.service.PasswordHasher;
@@ -147,7 +146,7 @@ public final class UserRepository {
                         ? null : donor.getOrganization());
                 statement.executeUpdate();
             }
-        } else if (user instanceof Volunteer) {
+        } else if (user.getUserType() == UserType.VOLUNTEER) {
             try (PreparedStatement statement = connection.prepareStatement(
                     "INSERT INTO volunteer_profiles (user_id) VALUES (?)")) {
                 statement.setInt(1, userId);

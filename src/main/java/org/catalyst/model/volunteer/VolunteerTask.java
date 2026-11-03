@@ -1,8 +1,10 @@
-package org.catalyst.model;
+package org.catalyst.model.volunteer;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+
+import org.catalyst.model.Skill;
 
 /** A volunteer task created for an event. */
 public final class VolunteerTask {

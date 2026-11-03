@@ -1,4 +1,4 @@
-package org.catalyst.model;
+package org.catalyst.model.communication;
 
 /** Simulates publishing a caption on the organization's Instagram account. */
 public class InstagramChannel extends SocialMediaChannel {

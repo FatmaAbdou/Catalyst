@@ -2,7 +2,7 @@ package org.catalyst.model.user;
 
 
 /** Shared details for the account types available on the sign-up page. */
-public abstract class User implements Recipient {
+public abstract class User implements org.catalyst.model.communication.Recipient {
     private int id;
     private final String name;
     private final String email;

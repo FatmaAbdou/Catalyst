@@ -3,7 +3,8 @@ package org.catalyst.controller;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import org.catalyst.model.Volunteer;
+
+import org.catalyst.model.volunteer.Volunteer;
 import org.catalyst.view.SceneManager;
 
 import java.io.IOException;

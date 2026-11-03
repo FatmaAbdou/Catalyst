@@ -1,9 +1,11 @@
-package org.catalyst.model;
+package org.catalyst.model.volunteer;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
+
+import org.catalyst.model.ServiceHour;
 
 /** A volunteer assigned to a task. */
 public final class VolunteerAssignment {

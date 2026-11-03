@@ -1,4 +1,8 @@
-package org.catalyst.model.user;
+package org.catalyst.model.beneficiary;
+
+import org.catalyst.model.user.User;
+import org.catalyst.model.user.UserFactory;
+import org.catalyst.model.user.UserType;
 
 /** Creates beneficiary officer accounts. */
 public final class BeneficiaryOfficerFactory extends UserFactory {

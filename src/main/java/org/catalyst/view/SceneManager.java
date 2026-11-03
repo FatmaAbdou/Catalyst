@@ -4,11 +4,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import org.catalyst.model.Beneficiary;
 
 import org.catalyst.model.user.User;
-import org.catalyst.model.UserType;
-import org.catalyst.model.Volunteer;
+import org.catalyst.model.user.UserType;
+import org.catalyst.model.volunteer.Volunteer;
+import org.catalyst.model.beneficiary.Beneficiary;
 import org.catalyst.repo.DonationRepository;
 import org.catalyst.repo.UserRepository;
 import org.catalyst.repo.VolunteerRepository;

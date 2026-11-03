@@ -1,7 +1,5 @@
 package org.catalyst.repo;
 
-import org.catalyst.model.Beneficiary;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -11,6 +9,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
+
+import org.catalyst.model.beneficiary.Beneficiary;
 
 public final class BeneficiaryRepository {
 

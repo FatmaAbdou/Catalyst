@@ -1,5 +1,7 @@
 package org.catalyst.model.user;
 
+import org.catalyst.model.volunteer.Volunteer;
+
 /** Creates volunteer accounts. */
 public final class VolunteerFactory extends UserFactory {
     @Override

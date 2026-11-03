@@ -1,7 +1,12 @@
-package org.catalyst.model.user;
+package org.catalyst.model.volunteer;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.catalyst.model.AvailabilitySlot;
+import org.catalyst.model.Skill;
+import org.catalyst.model.user.User;
+import org.catalyst.model.user.UserType;
 
 /** A volunteer account, with preferences collected later in the volunteer workflow. */
 public final class Volunteer extends User {

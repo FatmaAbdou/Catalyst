@@ -1,11 +1,11 @@
 package org.catalyst.service;
 
-import org.catalyst.model.CommunicationStrategy;
-import org.catalyst.model.DeliveryResult;
-import org.catalyst.model.EmailChannel;
-import org.catalyst.model.Message;
-import org.catalyst.model.Recipient;
-import org.catalyst.model.SMSChannel;
+import org.catalyst.model.communication.CommunicationStrategy;
+import org.catalyst.model.communication.EmailChannel;
+import org.catalyst.model.communication.Message;
+import org.catalyst.model.communication.SMSChannel;
+import org.catalyst.model.communication.DeliveryResult;
+import org.catalyst.model.communication.Recipient;
 import org.catalyst.repo.MessageLog;
 import org.catalyst.repo.RecipientDirectory;
 

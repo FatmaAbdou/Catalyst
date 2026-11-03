@@ -1,4 +1,4 @@
-package org.catalyst.model;
+package org.catalyst.model.communication;
 
 /** Simulates publishing a post on the organization's Facebook page. */
 public class FacebookChannel extends SocialMediaChannel {

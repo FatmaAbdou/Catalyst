@@ -11,7 +11,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import org.catalyst.model.AssistanceRecord;
-import org.catalyst.model.Beneficiary;
+import org.catalyst.model.beneficiary.Beneficiary;
 import org.catalyst.model.MonetaryAssistance;
 import org.catalyst.service.BeneficiaryService;
 import org.catalyst.view.SceneManager;

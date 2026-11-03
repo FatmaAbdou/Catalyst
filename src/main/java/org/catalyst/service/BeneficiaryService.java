@@ -1,9 +1,9 @@
 package org.catalyst.service;
 
 import org.catalyst.model.AssistanceRecord;
-import org.catalyst.model.Beneficiary;
-import org.catalyst.model.User;
-import org.catalyst.model.UserType;
+import org.catalyst.model.beneficiary.Beneficiary;
+import org.catalyst.model.user.User;
+import org.catalyst.model.user.UserType;
 import org.catalyst.repo.AssistanceCategoryRepository;
 import org.catalyst.repo.AssistanceRepository;
 import org.catalyst.repo.BeneficiaryRepository;

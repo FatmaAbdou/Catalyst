@@ -1,4 +1,4 @@
-package org.catalyst.model;
+package org.catalyst.model.communication;
 
 /** Validates the recipient's phone number and simulates sending an SMS. */
 public class SMSChannel implements CommunicationStrategy {

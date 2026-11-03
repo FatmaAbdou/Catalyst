@@ -1,4 +1,4 @@
-package org.catalyst.model;
+package org.catalyst.model.communication;
 
 /** Validates the recipient's email address and simulates sending an email. */
 public class EmailChannel implements CommunicationStrategy {

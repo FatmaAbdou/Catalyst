@@ -4,9 +4,9 @@ import org.catalyst.model.AvailabilitySlot;
 import org.catalyst.model.AssignmentNotification;
 import org.catalyst.model.ServiceHour;
 import org.catalyst.model.Skill;
-import org.catalyst.model.Volunteer;
-import org.catalyst.model.VolunteerAssignment;
-import org.catalyst.model.VolunteerTask;
+import org.catalyst.model.volunteer.Volunteer;
+import org.catalyst.model.volunteer.VolunteerAssignment;
+import org.catalyst.model.volunteer.VolunteerTask;
 
 import java.math.BigDecimal;
 import java.sql.Connection;

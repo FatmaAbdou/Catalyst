@@ -1,5 +1,8 @@
 package org.catalyst.model;
 
+import org.catalyst.model.volunteer.Volunteer;
+import org.catalyst.model.volunteer.VolunteerTask;
+
 public final class AppreciationCertificateFactory extends CertificateFactory {
     @Override
     public Certificate create(

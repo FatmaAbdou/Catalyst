@@ -3,6 +3,8 @@ package org.catalyst.model;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+import org.catalyst.model.volunteer.VolunteerTask;
+
 /** An in-app notice linked to the volunteer task it is about. */
 public final class AssignmentNotification {
     private final int id;

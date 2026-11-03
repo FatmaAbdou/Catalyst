@@ -1,4 +1,5 @@
-package org.catalyst.model;
+package org.catalyst.model.beneficiary;
+import org.catalyst.model.AssistanceRecord;
 
 import java.util.ArrayList;
 import java.util.HashSet;

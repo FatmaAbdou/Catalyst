@@ -1,8 +1,8 @@
 package org.catalyst.service;
 
-import org.catalyst.model.Volunteer;
-import org.catalyst.model.VolunteerAssignment;
-import org.catalyst.model.VolunteerTask;
+import org.catalyst.model.volunteer.Volunteer;
+import org.catalyst.model.volunteer.VolunteerAssignment;
+import org.catalyst.model.volunteer.VolunteerTask;
 import org.catalyst.repo.VolunteerRepository;
 
 import java.sql.SQLException;

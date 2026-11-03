@@ -1,5 +1,8 @@
-package org.catalyst.model.user;
+package org.catalyst.model.beneficiary;
+import org.catalyst.model.AssistanceRecord;
 
+import org.catalyst.model.user.User;
+import org.catalyst.model.user.UserType;
 import org.catalyst.service.BeneficiaryService;
 
 import java.sql.SQLException;

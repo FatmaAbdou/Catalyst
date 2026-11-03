@@ -19,6 +19,7 @@ public final class WelcomeController {
     @FXML private Button signUpButton;
     @FXML private Button topSignUpButton;
     @FXML private Button logInButton;
+    @FXML private Button beneficiariesButton;
     @FXML private Button logOutButton;
 
     public WelcomeController(SceneManager sceneManager) {
@@ -36,6 +37,7 @@ public final class WelcomeController {
         setShown(topSignUpButton, !signedIn);
         setShown(logInButton, !signedIn);
         setShown(logOutButton, signedIn);
+        setShown(beneficiariesButton, sceneManager.canManageBeneficiaries());
     }
 
     @FXML
@@ -49,6 +51,11 @@ public final class WelcomeController {
     }
 
     @FXML
+    private void openBeneficiaries() {
+        navigate(sceneManager::showBeneficiaryList);
+    }
+
+    @FXML
     private void logOut() {
         sceneManager.setCurrentUser(null);
         navigate(sceneManager::showWelcome);
@@ -59,6 +66,7 @@ public final class WelcomeController {
             action.run();
         } catch (IOException exception) {
             LOGGER.log(Level.SEVERE, "Could not open the requested page.", exception);
+            welcomeMessage.setText("We couldn't open that page. Please try again.");
         }
     }
 

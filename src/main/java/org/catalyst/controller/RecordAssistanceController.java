@@ -11,7 +11,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import org.catalyst.model.AssistanceFactory;
 import org.catalyst.model.AssistanceRecord;
-import org.catalyst.model.Beneficiary;
+import org.catalyst.model.beneficiary.Beneficiary;
 import org.catalyst.model.InKindAssistance;
 import org.catalyst.model.MonetaryAssistance;
 import org.catalyst.service.BeneficiaryService;

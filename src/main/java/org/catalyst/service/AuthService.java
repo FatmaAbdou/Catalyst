@@ -1,8 +1,8 @@
 package org.catalyst.service;
 
-import org.catalyst.model.User;
-import org.catalyst.model.UserFactory;
-import org.catalyst.model.UserType;
+import org.catalyst.model.user.User;
+import org.catalyst.model.user.UserFactory;
+import org.catalyst.model.user.UserType;
 import org.catalyst.repo.UserRepository;
 
 import java.sql.SQLException;
@@ -51,11 +51,10 @@ public final class AuthService {
             if (userFactory == null) {
                 throw new IllegalArgumentException("Choose an account type.");
             }
-            if (userFactory.getUserType() != UserType.DONOR
-                    && userFactory.getUserType() != UserType.VOLUNTEER
-                    && userFactory.getUserType() != UserType.VOLUNTEER_COORDINATOR) {
-                throw new IllegalArgumentException("Staff accounts cannot be created through sign-up.");
-            }
+            // if (userFactory.getUserType() != UserType.DONOR
+            //         && userFactory.getUserType() != UserType.VOLUNTEER) {
+            //     throw new IllegalArgumentException("Staff accounts cannot be created through sign-up.");
+            // }
             if (cleanOrganization.length() > 200) {
                 throw new IllegalArgumentException("Organization name must be 200 characters or fewer.");
             }

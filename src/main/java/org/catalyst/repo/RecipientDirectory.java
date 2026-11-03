@@ -1,8 +1,7 @@
 package org.catalyst.repo;
 
-import org.catalyst.model.Recipient;
-
-import org.catalyst.model.User;
+import org.catalyst.model.communication.Recipient;
+import org.catalyst.model.user.User;
 import java.util.ArrayList;
 import java.util.List;
 

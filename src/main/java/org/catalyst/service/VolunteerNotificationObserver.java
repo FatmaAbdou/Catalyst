@@ -1,6 +1,6 @@
 package org.catalyst.service;
 
-import org.catalyst.model.VolunteerAssignment;
+import org.catalyst.model.volunteer.VolunteerAssignment;
 import org.catalyst.repo.VolunteerRepository;
 
 import java.sql.SQLException;

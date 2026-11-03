@@ -4,8 +4,9 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import org.catalyst.model.Volunteer;
-import org.catalyst.model.VolunteerCoordinator;
+
+import org.catalyst.model.user.VolunteerCoordinator;
+import org.catalyst.model.volunteer.Volunteer;
 import org.catalyst.service.AuthService;
 import org.catalyst.view.SceneManager;
 

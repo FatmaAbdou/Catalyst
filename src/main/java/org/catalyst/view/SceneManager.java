@@ -4,15 +4,18 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import org.catalyst.model.Beneficiary;
-import org.catalyst.model.User;
-import org.catalyst.model.UserType;
-import org.catalyst.model.Volunteer;
+
+import org.catalyst.model.user.User;
+import org.catalyst.model.user.UserType;
+import org.catalyst.model.volunteer.Volunteer;
+import org.catalyst.model.beneficiary.Beneficiary;
+import org.catalyst.repo.DonationRepository;
 import org.catalyst.repo.UserRepository;
 import org.catalyst.repo.VolunteerRepository;
 import org.catalyst.service.AssignmentService;
 import org.catalyst.service.AuthService;
 import org.catalyst.service.BeneficiaryService;
+import org.catalyst.service.DonationService;
 import org.catalyst.service.PasswordHasher;
 import org.catalyst.service.VolunteerService;
 import org.catalyst.service.VolunteerNotificationObserver;
@@ -29,6 +32,7 @@ public final class SceneManager {
     private final VolunteerRepository volunteerRepository = new VolunteerRepository();
     private final VolunteerService volunteerService = new VolunteerService(volunteerRepository);
     private final AssignmentService assignmentService = new AssignmentService(volunteerRepository);
+    private final DonationService donationService = new DonationService(new DonationRepository());
     private User currentUser;
     private Beneficiary selectedBeneficiary;
     private boolean beneficiaryFormReturnsToDetails;
@@ -63,6 +67,10 @@ public final class SceneManager {
 
     public AssignmentService getAssignmentService() {
         return assignmentService;
+    }
+
+    public DonationService getDonationService() {
+        return donationService;
     }
 
     public User getCurrentUser() {
@@ -163,6 +171,10 @@ public final class SceneManager {
 
     public void showCoordinatorDashboard() throws IOException {
         show("coordinator.fxml");
+    }
+
+    public void showDonation() throws IOException {
+        show("donation.fxml");
     }
 
     private void show(String fileName) throws IOException {

@@ -9,9 +9,9 @@ import org.catalyst.model.HoursMilestoneCertificateFactory;
 import org.catalyst.model.ParticipationCertificateFactory;
 import org.catalyst.model.ServiceHour;
 import org.catalyst.model.Skill;
-import org.catalyst.model.Volunteer;
-import org.catalyst.model.VolunteerAssignment;
-import org.catalyst.model.VolunteerTask;
+import org.catalyst.model.volunteer.Volunteer;
+import org.catalyst.model.volunteer.VolunteerAssignment;
+import org.catalyst.model.volunteer.VolunteerTask;
 import org.catalyst.repo.VolunteerRepository;
 
 import java.math.BigDecimal;

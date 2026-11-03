@@ -2,6 +2,7 @@ package org.catalyst.model;
 
 import org.catalyst.service.BeneficiaryService;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
 
@@ -37,32 +38,32 @@ public final class BeneficiaryOfficer extends User {
         return UserType.BENEFICIARY_OFFICER;
     }
 
-    public void createBeneficiary(Beneficiary beneficiary) {
+    public void createBeneficiary(Beneficiary beneficiary) throws SQLException {
         service().createBeneficiary(this, beneficiary);
     }
 
-    public void updateBeneficiary(Beneficiary beneficiary) {
+    public void updateBeneficiary(Beneficiary beneficiary) throws SQLException {
         service().updateBeneficiary(this, beneficiary);
     }
 
-    public List<Beneficiary> searchBeneficiaries(String keyword) {
+    public List<Beneficiary> searchBeneficiaries(String keyword) throws SQLException {
         return service().searchBeneficiaries(this, keyword);
     }
 
     public void recordAssistance(
             Beneficiary beneficiary,
-            AssistanceRecord record) {
+            AssistanceRecord record) throws SQLException {
 
         service().recordAssistance(this, beneficiary, record);
     }
 
     public List<AssistanceRecord> viewAssistanceHistory(
-            Beneficiary beneficiary) {
+            Beneficiary beneficiary) throws SQLException {
 
         return service().viewAssistanceHistory(this, beneficiary);
     }
 
-    public void addNote(AssistanceRecord record, String notes) {
+    public void addNote(AssistanceRecord record, String notes) throws SQLException {
         service().addNote(this, record, notes);
     }
 

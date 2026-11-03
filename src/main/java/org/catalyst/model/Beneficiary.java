@@ -1,7 +1,9 @@
 package org.catalyst.model;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public final class Beneficiary {
 
@@ -120,6 +122,25 @@ public final class Beneficiary {
         }
 
         assistanceHistory.add(record);
+    }
+
+    /** Replaces the local snapshot with saved records loaded from the database. */
+    public void replaceAssistanceHistory(List<AssistanceRecord> records) {
+        List<AssistanceRecord> snapshot = List.copyOf(records);
+        Set<Integer> recordIDs = new HashSet<>();
+
+        for (AssistanceRecord record : snapshot) {
+            if (record.getRecordID() <= 0
+                    || !recordIDs.add(record.getRecordID())) {
+
+                throw new IllegalArgumentException(
+                        "History must contain saved records with unique IDs."
+                );
+            }
+        }
+
+        assistanceHistory.clear();
+        assistanceHistory.addAll(snapshot);
     }
 
     public List<AssistanceRecord> getAssistanceHistory() {

@@ -4,6 +4,7 @@ import org.catalyst.model.AvailabilitySlot;
 import org.catalyst.model.AssignmentNotification;
 import org.catalyst.model.Certificate;
 import org.catalyst.model.ServiceHour;
+import org.catalyst.model.Skill;
 import org.catalyst.model.Volunteer;
 import org.catalyst.model.VolunteerAssignment;
 import org.catalyst.model.VolunteerTask;
@@ -15,7 +16,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,17 +32,17 @@ public final class VolunteerService {
         repository.loadProfile(volunteer);
     }
 
-    public List<String> getSkills() throws SQLException {
+    public List<Skill> getSkills() throws SQLException {
         return repository.getSkills();
     }
 
-    public String addSkill(String skill) throws SQLException {
+    public Skill addSkill(String skill) throws SQLException {
         String cleanSkill = skill == null ? "" : skill.trim();
         if (cleanSkill.isBlank() || cleanSkill.length() > 120) {
             throw new IllegalArgumentException("A skill must be 1 to 120 characters.");
         }
-        for (String savedSkill : repository.getSkills()) {
-            if (savedSkill.equalsIgnoreCase(cleanSkill)) {
+        for (Skill savedSkill : repository.getSkills()) {
+            if (savedSkill.name().equalsIgnoreCase(cleanSkill)) {
                 return savedSkill;
             }
         }
@@ -50,9 +50,9 @@ public final class VolunteerService {
     }
 
     public void save(
-            Volunteer volunteer, Set<String> skills, List<AvailabilitySlot> availability,
+            Volunteer volunteer, List<Skill> skills, List<AvailabilitySlot> availability,
             String preferences, String notificationChannel) throws SQLException {
-        List<String> cleanSkills = cleanSkills(skills);
+        List<Skill> cleanSkills = cleanVolunteerSkills(skills);
         if (!"EMAIL".equals(notificationChannel) && !"SMS".equals(notificationChannel)) {
             throw new IllegalArgumentException("Choose EMAIL or SMS for notifications.");
         }
@@ -122,7 +122,8 @@ public final class VolunteerService {
         if (assignment == null) {
             throw new IllegalArgumentException("Select an active assignment.");
         }
-        repository.recordHours(volunteer.getId(), assignment.id(), date, hours);
+        ServiceHour serviceHour = assignment.logHours(date, hours);
+        repository.recordHours(volunteer.getId(), serviceHour);
     }
 
     public List<ServiceHour> getPendingServiceHours() throws SQLException {
@@ -161,7 +162,7 @@ public final class VolunteerService {
 
     public void createTask(
             Integer eventId, String description, LocalDateTime startsAt, LocalDateTime endsAt,
-            Set<String> requiredSkills, int volunteersNum) throws SQLException {
+            Set<Skill> requiredSkills, int volunteersNum) throws SQLException {
         String cleanDescription = description == null ? "" : description.trim();
         if (cleanDescription.isBlank() || cleanDescription.length() > 2000) {
             throw new IllegalArgumentException("Task description must be 1 to 2000 characters.");
@@ -175,13 +176,7 @@ public final class VolunteerService {
         if (eventId != null && !repository.getEvents().containsKey(eventId)) {
             throw new IllegalArgumentException("Choose a currently upcoming event, or leave it blank.");
         }
-        List<String> availableSkills = repository.getSkills();
-        List<String> cleanSkills = cleanSkills(requiredSkills);
-        for (String skill : cleanSkills) {
-            if (!availableSkills.contains(skill)) {
-                throw new IllegalArgumentException("Choose skills from the list.");
-            }
-        }
+        List<Skill> cleanSkills = cleanRequiredSkills(requiredSkills, repository.getSkills());
         repository.createTask(new VolunteerTask(
                 0, eventId, null, cleanDescription, startsAt, endsAt, cleanSkills, volunteersNum));
     }
@@ -230,16 +225,36 @@ public final class VolunteerService {
         }
     }
 
-    private List<String> cleanSkills(Set<String> skills) {
-        Set<String> cleanSkills = new LinkedHashSet<>();
-        for (String skill : skills) {
-            String cleanSkill = skill.trim();
-            if (cleanSkill.isBlank() || cleanSkill.length() > 120) {
-                throw new IllegalArgumentException(
-                        "A skill must be 1 to 120 characters.");
+    private List<Skill> cleanVolunteerSkills(List<Skill> skills) throws SQLException {
+        Map<Integer, Skill> catalogById = repository.getSkills().stream()
+                .collect(java.util.stream.Collectors.toMap(Skill::id, skill -> skill));
+        Map<Integer, Skill> cleanSkills = new java.util.LinkedHashMap<>();
+        for (Skill skill : skills) {
+            Skill catalogSkill = catalogById.get(skill.id());
+            if (catalogSkill == null || !catalogSkill.name().equals(skill.name())) {
+                throw new IllegalArgumentException("Choose skills from the shared skill list.");
             }
-            cleanSkills.add(cleanSkill);
+            if (!Skill.LEVELS.contains(skill.level())) {
+                throw new IllegalArgumentException("Choose a valid level for each skill.");
+            }
+            cleanSkills.put(skill.id(),
+                    new Skill(skill.id(), catalogSkill.name(), skill.level()));
         }
-        return new ArrayList<>(cleanSkills);
+        return new ArrayList<>(cleanSkills.values());
+    }
+
+    private List<Skill> cleanRequiredSkills(Set<Skill> skills, List<Skill> catalog) {
+        Map<Integer, Skill> catalogById = catalog.stream()
+                .collect(java.util.stream.Collectors.toMap(Skill::id, skill -> skill));
+        Map<Integer, Skill> cleanSkills = new java.util.LinkedHashMap<>();
+        for (Skill skill : skills) {
+            Skill catalogSkill = catalogById.get(skill.id());
+            if (catalogSkill == null || !catalogSkill.name().equals(skill.name())) {
+                throw new IllegalArgumentException("Choose skills from the shared skill list.");
+            }
+            cleanSkills.put(skill.id(),
+                    new Skill(skill.id(), catalogSkill.name(), Skill.ANY_LEVEL));
+        }
+        return new ArrayList<>(cleanSkills.values());
     }
 }

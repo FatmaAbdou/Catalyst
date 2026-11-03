@@ -5,7 +5,7 @@ import java.util.List;
 
 /** A volunteer account, with preferences collected later in the volunteer workflow. */
 public final class Volunteer extends User {
-    private List<String> skills = new ArrayList<>();
+    private List<Skill> skills = new ArrayList<>();
     private List<AvailabilitySlot> availability = new ArrayList<>();
     private String preferences = "";
     private String notificationChannel = "EMAIL";
@@ -14,11 +14,11 @@ public final class Volunteer extends User {
         super(name, email, contactInfo);
     }
 
-    public List<String> getSkills() {
+    public List<Skill> getSkills() {
         return List.copyOf(skills);
     }
 
-    public void updateSkills(List<String> skills) {
+    public void updateSkills(List<Skill> skills) {
         this.skills = new ArrayList<>(skills);
     }
 

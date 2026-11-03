@@ -1,0 +1,3 @@
+ALTER TABLE volunteer_skills
+    ADD COLUMN skill_level VARCHAR(20) NOT NULL DEFAULT 'BEGINNER'
+        CHECK (skill_level IN ('BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT'));

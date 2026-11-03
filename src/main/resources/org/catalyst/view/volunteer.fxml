@@ -50,6 +50,12 @@
                                         <MenuButton fx:id="skillsMenuButton" text="Choose skills"
                                                     maxWidth="Infinity" styleClass="input-field"/>
                                         <ListView fx:id="selectedSkillsList" prefHeight="105" styleClass="activity-list"/>
+                                        <HBox alignment="CENTER_LEFT" spacing="8">
+                                            <ComboBox fx:id="skillLevelBox" promptText="Proficiency level"
+                                                      HBox.hgrow="ALWAYS" styleClass="input-field"/>
+                                            <Button text="Set level" onAction="#updateSkillLevel"
+                                                    styleClass="secondary-button"/>
+                                        </HBox>
                                         <Button text="Remove selected skill" onAction="#removeSkill" styleClass="nav-button"/>
                                         <Label text="Weekly availability" styleClass="field-label"/>
                                         <ComboBox fx:id="dayBox" promptText="Choose a day"

@@ -27,6 +27,7 @@ import org.catalyst.model.AvailabilitySlot;
 import org.catalyst.model.AssignmentNotification;
 import org.catalyst.model.Certificate;
 import org.catalyst.model.ServiceHour;
+import org.catalyst.model.Skill;
 import org.catalyst.model.Volunteer;
 import org.catalyst.model.VolunteerAssignment;
 import org.catalyst.model.VolunteerTask;
@@ -46,10 +47,10 @@ import java.time.LocalTime;
 import java.time.format.TextStyle;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -59,10 +60,10 @@ public final class VolunteerController {
 
     private final SceneManager sceneManager;
     private final VolunteerService volunteerService;
-    private final Set<String> selectedSkills = new LinkedHashSet<>();
+    private final Map<Integer, Skill> selectedSkills = new LinkedHashMap<>();
     private final ObservableList<AvailabilitySlot> availabilitySlots =
             FXCollections.observableArrayList();
-    private List<String> currentSkills = List.of();
+    private List<Skill> currentSkills = List.of();
     private int approvedHours;
 
     @FXML private Label greetingLabel;
@@ -74,7 +75,8 @@ public final class VolunteerController {
     @FXML private Label notificationDetailsLabel;
     @FXML private Button downloadCertificateButton;
     @FXML private MenuButton skillsMenuButton;
-    @FXML private ListView<String> selectedSkillsList;
+    @FXML private ListView<Skill> selectedSkillsList;
+    @FXML private ComboBox<String> skillLevelBox;
     @FXML private ComboBox<DayOfWeek> dayBox;
     @FXML private ComboBox<LocalTime> startTimeBox;
     @FXML private ComboBox<LocalTime> endTimeBox;
@@ -109,7 +111,15 @@ public final class VolunteerController {
 
         greetingLabel.setText("Hello, " + volunteer.getName());
         hoursDatePicker.setValue(LocalDate.now());
-        selectedSkillsList.getItems().setAll(selectedSkills);
+        selectedSkillsList.getItems().setAll(selectedSkills.values());
+        skillLevelBox.getItems().setAll(Skill.LEVELS.stream().sorted().toList());
+        skillLevelBox.setValue("BEGINNER");
+        selectedSkillsList.getSelectionModel().selectedItemProperty().addListener(
+                (observable, oldSkill, skill) -> {
+                    if (skill != null) {
+                        skillLevelBox.setValue(skill.level());
+                    }
+                });
         availabilityList.setItems(availabilitySlots);
         dayBox.getItems().setAll(DayOfWeek.values());
         dayBox.setConverter(new StringConverter<>() {
@@ -140,8 +150,10 @@ public final class VolunteerController {
                         certificateTasksList.getSelectionModel().getSelectedItem()));
         try {
             volunteerService.load(volunteer);
-            selectedSkills.addAll(volunteer.getSkills());
-            selectedSkillsList.getItems().setAll(selectedSkills);
+            for (Skill skill : volunteer.getSkills()) {
+                selectedSkills.put(skill.id(), skill);
+            }
+            refreshSelectedSkills();
             availabilitySlots.setAll(volunteer.getAvailability());
             sortAvailability();
             preferencesField.setText(volunteer.getPreferences());
@@ -187,28 +199,51 @@ public final class VolunteerController {
 
     @FXML
     private void removeSkill() {
-        String skill = selectedSkillsList.getSelectionModel().getSelectedItem();
+        Skill skill = selectedSkillsList.getSelectionModel().getSelectedItem();
         if (skill != null) {
-            selectedSkills.remove(skill);
-            selectedSkillsList.getItems().remove(skill);
+            selectedSkills.remove(skill.id());
+            refreshSelectedSkills();
             loadSkillMenu(currentSkills);
         }
     }
 
-    private void loadSkillMenu(List<String> skills) {
+    @FXML
+    private void updateSkillLevel() {
+        Skill selected = selectedSkillsList.getSelectionModel().getSelectedItem();
+        String level = skillLevelBox.getValue();
+        if (selected == null || level == null) {
+            showMessage("Select a skill and its proficiency level.");
+            return;
+        }
+        selectedSkills.put(selected.id(), new Skill(selected.id(), selected.name(), level));
+        refreshSelectedSkills();
+        selectedSkillsList.getSelectionModel().select(
+                selectedSkillsList.getItems().stream()
+                        .filter(skill -> skill.id() == selected.id())
+                        .findFirst().orElse(null));
+        showMessage("");
+    }
+
+    private void refreshSelectedSkills() {
+        selectedSkillsList.getItems().setAll(selectedSkills.values());
+        updateSkillButtonText();
+    }
+
+    private void loadSkillMenu(List<Skill> skills) {
         currentSkills = List.copyOf(skills);
         skillsMenuButton.getItems().clear();
-        for (String skill : currentSkills) {
-            CheckMenuItem item = new CheckMenuItem(skill);
-            item.setSelected(selectedSkills.contains(skill));
+        for (Skill skill : currentSkills) {
+            CheckMenuItem item = new CheckMenuItem(skill.name());
+            item.setSelected(selectedSkills.containsKey(skill.id()));
             item.setOnAction(event -> {
                 if (item.isSelected()) {
-                    selectedSkills.add(skill);
+                    Skill existing = selectedSkills.get(skill.id());
+                    selectedSkills.put(skill.id(), existing == null
+                            ? new Skill(skill.id(), skill.name(), "BEGINNER") : existing);
                 } else {
-                    selectedSkills.remove(skill);
+                    selectedSkills.remove(skill.id());
                 }
-                selectedSkillsList.getItems().setAll(selectedSkills);
-                updateSkillButtonText();
+                refreshSelectedSkills();
             });
             skillsMenuButton.getItems().add(item);
         }
@@ -229,9 +264,10 @@ public final class VolunteerController {
         dialog.setContentText("Skill name:");
         dialog.showAndWait().ifPresent(name -> {
             try {
-                String savedSkill = volunteerService.addSkill(name);
-                selectedSkills.add(savedSkill);
-                selectedSkillsList.getItems().setAll(selectedSkills);
+                Skill savedSkill = volunteerService.addSkill(name);
+                selectedSkills.putIfAbsent(savedSkill.id(),
+                        new Skill(savedSkill.id(), savedSkill.name(), "BEGINNER"));
+                refreshSelectedSkills();
                 loadSkillMenu(volunteerService.getSkills());
                 showMessage("Skill added. Save your profile to keep your selections.");
             } catch (IllegalArgumentException exception) {
@@ -275,7 +311,7 @@ public final class VolunteerController {
         try {
             volunteerService.save(
                     volunteer,
-                    selectedSkills,
+                    List.copyOf(selectedSkills.values()),
                     List.copyOf(availabilitySlots),
                     preferencesField.getText(),
                     channelBox.getValue());
@@ -361,7 +397,9 @@ public final class VolunteerController {
         VolunteerTask task = notification.task();
         String event = task.eventName() == null ? "Not linked to an event" : task.eventName();
         String skills = task.requiredSkills().isEmpty()
-                ? "No specific skills required" : String.join(", ", task.requiredSkills());
+                ? "No specific skills required"
+                : task.requiredSkills().stream().map(Skill::name)
+                        .collect(java.util.stream.Collectors.joining(", "));
         notificationDetailsLabel.setText(
                 task.description() + "\n"
                         + "Event: " + event + "\n"

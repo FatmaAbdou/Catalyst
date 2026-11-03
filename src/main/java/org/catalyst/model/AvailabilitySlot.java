@@ -8,14 +8,46 @@ import java.util.Locale;
 import java.util.Objects;
 
 /** A weekly volunteer availability range. */
-public record AvailabilitySlot(DayOfWeek day, LocalTime start, LocalTime end) {
-    public AvailabilitySlot {
-        Objects.requireNonNull(day, "Choose a day.");
-        Objects.requireNonNull(start, "Choose a start time.");
-        Objects.requireNonNull(end, "Choose an end time.");
+public final class AvailabilitySlot {
+    private final DayOfWeek day;
+    private final LocalTime start;
+    private final LocalTime end;
+
+    public AvailabilitySlot(DayOfWeek day, LocalTime start, LocalTime end) {
+        this.day = Objects.requireNonNull(day, "Choose a day.");
+        this.start = Objects.requireNonNull(start, "Choose a start time.");
+        this.end = Objects.requireNonNull(end, "Choose an end time.");
         if (!end.isAfter(start)) {
             throw new IllegalArgumentException("End time must be after start time.");
         }
+    }
+
+    public DayOfWeek day() {
+        return day;
+    }
+
+    public LocalTime start() {
+        return start;
+    }
+
+    public LocalTime end() {
+        return end;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (!(other instanceof AvailabilitySlot slot)) {
+            return false;
+        }
+        return day == slot.day && start.equals(slot.start) && end.equals(slot.end);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(day, start, end);
     }
 
     @Override

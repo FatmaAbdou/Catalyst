@@ -25,6 +25,7 @@ import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
 import org.catalyst.model.Certificate;
 import org.catalyst.model.ServiceHour;
+import org.catalyst.model.Skill;
 import org.catalyst.model.Volunteer;
 import org.catalyst.model.VolunteerAssignment;
 import org.catalyst.model.VolunteerCoordinator;
@@ -61,7 +62,7 @@ public final class CoordinatorController implements Observer {
     private final SceneManager sceneManager;
     private final VolunteerService volunteerService;
     private final AssignmentService assignmentService;
-    private final Set<String> selectedRequiredSkills = new LinkedHashSet<>();
+    private final Set<Skill> selectedRequiredSkills = new LinkedHashSet<>();
     @FXML private Label greetingLabel;
     @FXML private Label messageLabel;
     @FXML private ComboBox<Map.Entry<Integer, String>> eventBox;
@@ -164,7 +165,8 @@ public final class CoordinatorController implements Observer {
             eventBox.getItems().setAll(events.entrySet());
             populateRequiredSkills(volunteerService.getSkills());
             skillFilterBox.getItems().setAll("All skills");
-            skillFilterBox.getItems().addAll(volunteerService.getSkills());
+            skillFilterBox.getItems().addAll(volunteerService.getSkills().stream()
+                    .map(Skill::name).toList());
             skillFilterBox.setValue("All skills");
             loadTasks();
             searchVolunteers();
@@ -448,7 +450,8 @@ public final class CoordinatorController implements Observer {
                                     + (task.eventName() == null ? "None" : task.eventName())
                                     + "\nRequired skills: "
                                     + (task.requiredSkills().isEmpty() ? "None"
-                                    : String.join(", ", task.requiredSkills()))));
+                                    : task.requiredSkills().stream().map(Skill::name)
+                                            .collect(java.util.stream.Collectors.joining(", ")))));
                 }
             }
         });
@@ -473,10 +476,10 @@ public final class CoordinatorController implements Observer {
         scheduleVolunteerFilterBox.setValue(null);
     }
 
-    private void populateRequiredSkills(List<String> skills) {
+    private void populateRequiredSkills(List<Skill> skills) {
         requiredSkillsBox.getChildren().clear();
-        for (String skill : skills) {
-            CheckBox checkBox = new CheckBox(skill);
+        for (Skill skill : skills) {
+            CheckBox checkBox = new CheckBox(skill.name());
             checkBox.setSelected(selectedRequiredSkills.contains(skill));
             checkBox.setOnAction(event -> {
                 if (checkBox.isSelected()) {
@@ -496,7 +499,7 @@ public final class CoordinatorController implements Observer {
         List<Volunteer> filtered = searchResults.stream()
                 .filter(volunteer -> skill == null || "All skills".equals(skill)
                         || volunteer.getSkills().stream().anyMatch(
-                                volunteerSkill -> volunteerSkill.equalsIgnoreCase(skill)))
+                                        volunteerSkill -> volunteerSkill.name().equalsIgnoreCase(skill)))
                 .filter(volunteer -> {
                     if ("Available".equals(availability)) {
                         return volunteerService.isAvailableForTask(volunteer, selectedTask);
@@ -559,7 +562,9 @@ public final class CoordinatorController implements Observer {
                 email.getStyleClass().add("volunteer-result-email");
                 Label skills = new Label(volunteer.getSkills().isEmpty()
                         ? "Skills not added"
-                        : String.join("  ·  ", volunteer.getSkills()));
+                        : volunteer.getSkills().stream()
+                                .map(Skill::toString)
+                                .collect(java.util.stream.Collectors.joining("  ·  ")));
                 skills.getStyleClass().add("volunteer-result-skills");
                 skills.setWrapText(true);
                 VolunteerTask selectedTask = taskList.getSelectionModel().getSelectedItem();

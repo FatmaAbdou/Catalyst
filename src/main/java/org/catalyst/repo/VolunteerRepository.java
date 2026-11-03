@@ -3,6 +3,7 @@ package org.catalyst.repo;
 import org.catalyst.model.AvailabilitySlot;
 import org.catalyst.model.AssignmentNotification;
 import org.catalyst.model.ServiceHour;
+import org.catalyst.model.Skill;
 import org.catalyst.model.Volunteer;
 import org.catalyst.model.VolunteerAssignment;
 import org.catalyst.model.VolunteerTask;
@@ -50,8 +51,8 @@ public final class VolunteerRepository {
             }
         }
 
-        volunteer.updateSkills(readStrings(connection, """
-                SELECT s.skill_name
+        volunteer.updateSkills(readSkills(connection, """
+                SELECT s.skill_id, s.skill_name, vs.skill_level
                 FROM skills s
                 JOIN volunteer_skills vs ON vs.skill_id = s.skill_id
                 WHERE vs.volunteer_id = ?
@@ -65,14 +66,15 @@ public final class VolunteerRepository {
                 """, volunteerId));
     }
 
-    public List<String> getSkills() throws SQLException {
-        List<String> skills = new ArrayList<>();
-        String sql = "SELECT skill_name FROM skills ORDER BY skill_name";
+    public List<Skill> getSkills() throws SQLException {
+        List<Skill> skills = new ArrayList<>();
+        String sql = "SELECT skill_id, skill_name FROM skills ORDER BY skill_name";
         try (PreparedStatement statement =
                      DatabaseConnection.getInstance().getConnection().prepareStatement(sql);
              ResultSet result = statement.executeQuery()) {
             while (result.next()) {
-                skills.add(result.getString("skill_name"));
+                skills.add(new Skill(result.getInt("skill_id"),
+                        result.getString("skill_name"), Skill.ANY_LEVEL));
             }
         }
         return skills;
@@ -159,11 +161,11 @@ public final class VolunteerRepository {
                     SELECT ?, skill_id FROM skills WHERE skill_name = ?
                     """;
             try (PreparedStatement statement = connection.prepareStatement(skillSql)) {
-                for (String skill : task.requiredSkills()) {
+                for (Skill skill : task.requiredSkills()) {
                     statement.setInt(1, taskId);
-                    statement.setString(2, skill);
+                    statement.setString(2, skill.name());
                     if (statement.executeUpdate() != 1) {
-                        throw new SQLException("A required skill was not found: " + skill);
+                        throw new SQLException("A required skill was not found: " + skill.name());
                     }
                 }
             }
@@ -229,7 +231,7 @@ public final class VolunteerRepository {
     public List<Volunteer> searchVolunteers(String filter) throws SQLException {
         String sql = """
                 SELECT u.user_id, vp.volunteer_id, u.name, u.email, u.contact_info,
-                       vp.preferences, s.skill_name
+                       vp.preferences, s.skill_id, s.skill_name, vs.skill_level
                 FROM users u
                 JOIN volunteer_profiles vp ON vp.user_id = u.user_id
                 LEFT JOIN volunteer_skills vs ON vs.volunteer_id = vp.volunteer_id
@@ -241,7 +243,7 @@ public final class VolunteerRepository {
         String cleanFilter = filter == null ? "" : filter.trim();
         String query = "%" + cleanFilter + "%";
         Map<Integer, Volunteer> volunteers = new LinkedHashMap<>();
-        Map<Integer, List<String>> skillsByVolunteer = new LinkedHashMap<>();
+        Map<Integer, List<Skill>> skillsByVolunteer = new LinkedHashMap<>();
         Map<Integer, Integer> volunteerIds = new LinkedHashMap<>();
         Connection connection = DatabaseConnection.getInstance().getConnection();
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -262,9 +264,12 @@ public final class VolunteerRepository {
                         volunteerIds.put(userId, result.getInt("volunteer_id"));
                     }
                     skillsByVolunteer.computeIfAbsent(userId, id -> new ArrayList<>());
-                    String skill = result.getString("skill_name");
-                    if (skill != null) {
-                        skillsByVolunteer.get(userId).add(skill);
+                    String skillName = result.getString("skill_name");
+                    if (skillName != null) {
+                        skillsByVolunteer.get(userId).add(new Skill(
+                                result.getInt("skill_id"),
+                                skillName,
+                                result.getString("skill_level")));
                     }
                 }
             }
@@ -439,8 +444,11 @@ public final class VolunteerRepository {
         }
     }
 
-    public void recordHours(int userId, int assignmentId, LocalDate date, BigDecimal hours)
+    public void recordHours(int userId, ServiceHour serviceHour)
             throws SQLException {
+        int assignmentId = serviceHour.assignmentId();
+        LocalDate date = serviceHour.date();
+        BigDecimal hours = serviceHour.hours();
         Connection connection = DatabaseConnection.getInstance().getConnection();
         boolean originalAutoCommit = connection.getAutoCommit();
         connection.setAutoCommit(false);
@@ -706,11 +714,11 @@ public final class VolunteerRepository {
         }
     }
 
-    public String addSkill(String name) throws SQLException {
+    public Skill addSkill(String name) throws SQLException {
         String sql = """
                 INSERT INTO skills (skill_name) VALUES (?)
                 ON CONFLICT (skill_name) DO UPDATE SET skill_name = EXCLUDED.skill_name
-                RETURNING skill_name
+                RETURNING skill_id, skill_name
                 """;
         try (PreparedStatement statement =
                      DatabaseConnection.getInstance().getConnection().prepareStatement(sql)) {
@@ -719,7 +727,10 @@ public final class VolunteerRepository {
                 if (!result.next()) {
                     throw new SQLException("The skill could not be saved.");
                 }
-                return result.getString("skill_name");
+                return new Skill(
+                        result.getInt("skill_id"),
+                        result.getString("skill_name"),
+                        Skill.ANY_LEVEL);
             }
         }
     }
@@ -749,12 +760,16 @@ public final class VolunteerRepository {
                 statement.setInt(1, volunteerId);
                 statement.executeUpdate();
             }
-            for (String skill : volunteer.getSkills()) {
-                int skillId = findOrCreateSkill(connection, skill);
+            for (Skill skill : volunteer.getSkills()) {
                 try (PreparedStatement statement = connection.prepareStatement(
-                        "INSERT INTO volunteer_skills (volunteer_id, skill_id) VALUES (?, ?)")) {
+                        """
+                                INSERT INTO volunteer_skills
+                                    (volunteer_id, skill_id, skill_level)
+                                VALUES (?, ?, ?)
+                                """)) {
                     statement.setInt(1, volunteerId);
-                    statement.setInt(2, skillId);
+                    statement.setInt(2, skill.id());
+                    statement.setString(3, skill.level());
                     statement.executeUpdate();
                 }
             }
@@ -840,18 +855,21 @@ public final class VolunteerRepository {
         return hours;
     }
 
-    private List<String> readStrings(Connection connection, String sql, int volunteerId)
+    private List<Skill> readSkills(Connection connection, String sql, int volunteerId)
             throws SQLException {
-        List<String> values = new ArrayList<>();
+        List<Skill> skills = new ArrayList<>();
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, volunteerId);
             try (ResultSet result = statement.executeQuery()) {
                 while (result.next()) {
-                    values.add(result.getString(1));
+                    skills.add(new Skill(
+                            result.getInt("skill_id"),
+                            result.getString("skill_name"),
+                            result.getString("skill_level")));
                 }
             }
         }
-        return values;
+        return skills;
     }
 
     private List<AvailabilitySlot> readAvailability(
@@ -884,10 +902,10 @@ public final class VolunteerRepository {
         }
     }
 
-    private List<String> getTaskSkills(Connection connection, int taskId) throws SQLException {
-        List<String> skills = new ArrayList<>();
+    private List<Skill> getTaskSkills(Connection connection, int taskId) throws SQLException {
+        List<Skill> skills = new ArrayList<>();
         String sql = """
-                SELECT s.skill_name
+                SELECT s.skill_id, s.skill_name
                 FROM task_required_skills trs
                 JOIN skills s ON s.skill_id = trs.skill_id
                 WHERE trs.task_id = ?
@@ -897,7 +915,8 @@ public final class VolunteerRepository {
             statement.setInt(1, taskId);
             try (ResultSet result = statement.executeQuery()) {
                 while (result.next()) {
-                    skills.add(result.getString("skill_name"));
+                    skills.add(new Skill(result.getInt("skill_id"),
+                            result.getString("skill_name"), Skill.ANY_LEVEL));
                 }
             }
         }
@@ -975,18 +994,4 @@ public final class VolunteerRepository {
         }
     }
 
-    private int findOrCreateSkill(Connection connection, String name) throws SQLException {
-        String sql = """
-                INSERT INTO skills (skill_name) VALUES (?)
-                ON CONFLICT (skill_name) DO UPDATE SET skill_name = EXCLUDED.skill_name
-                RETURNING skill_id
-                """;
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, name);
-            try (ResultSet result = statement.executeQuery()) {
-                result.next();
-                return result.getInt(1);
-            }
-        }
-    }
 }

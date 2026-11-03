@@ -145,7 +145,7 @@ public final class DonationController {
                 case CASH -> "";
                 case CHECK -> "Check number";
                 case CARD -> "Card number";
-                case INSTAPAY -> "InstaPay address (name@instapay)";
+                case INSTAPAY -> "InstaPay phone number";
             });
         }
     }

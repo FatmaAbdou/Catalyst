@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.Priority?>
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.catalyst.controller.WelcomeController" styleClass="page welcome-page">
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="top-bar">
+            <padding><Insets top="16" right="42" bottom="16" left="42"/></padding>
+            <Label text="✿" styleClass="brand-mark"/>
+            <Label text="catalyst" styleClass="brand"/>
+            <Label text="COMMUNITY CARE" styleClass="top-note"/>
+            <HBox HBox.hgrow="ALWAYS"/>
+            <Button fx:id="logInButton" text="Log in" onAction="#openLogin" styleClass="nav-button"/>
+            <Button fx:id="topSignUpButton" text="Join us  →" onAction="#openSignUp" styleClass="nav-join-button"/>
+            <Button fx:id="logOutButton" text="Log out" onAction="#logOut" styleClass="nav-button"/>
+        </HBox>
+    </top>
+    <center>
+        <HBox alignment="CENTER" spacing="34" styleClass="welcome-content">
+            <padding><Insets top="42" right="42" bottom="48" left="42"/></padding>
+            <VBox alignment="CENTER_LEFT" spacing="20" HBox.hgrow="ALWAYS" maxWidth="490">
+                <Label text="HERE FOR EACH OTHER" styleClass="eyebrow"/>
+                <Label text="Care grows when we share it." wrapText="true" styleClass="hero-title"/>
+                <Label fx:id="welcomeMessage" text="Small acts of kindness can change a community." wrapText="true" styleClass="body-copy"/>
+                <Button fx:id="signUpButton" text="Become part of Catalyst  →" onAction="#openSignUp" styleClass="primary-button"/>
+                <HBox alignment="CENTER_LEFT" spacing="9" styleClass="trust-line">
+                    <Label text="♥" styleClass="heart-icon"/>
+                    <Label text="Supporting neighbors. Strengthening communities." styleClass="footer-note"/>
+                </HBox>
+            </VBox>
+            <VBox alignment="CENTER" spacing="18" prefWidth="250" minWidth="220" styleClass="impact-card">
+                <Label text="♥" styleClass="impact-icon"/>
+                <Label text="A community that cares" wrapText="true" styleClass="impact-title"/>
+                <Label text="Every helping hand makes a difference. Find your place, connect with others, and make kindness count." wrapText="true" styleClass="impact-copy"/>
+                <HBox alignment="CENTER" spacing="8" styleClass="impact-tag">
+                    <Label text="✦" styleClass="tag-icon"/>
+                    <Label text="Together is better" styleClass="tag-text"/>
+                </HBox>
+            </VBox>
+        </HBox>
+    </center>
+</BorderPane>

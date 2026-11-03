@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.catalyst.controller.LoginController" styleClass="page">
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="top-bar">
+            <padding><Insets top="14" right="36" bottom="14" left="36"/></padding>
+            <Button text="←  Home" onAction="#openWelcome" styleClass="nav-button"/>
+            <Label text="✿" styleClass="brand-mark"/>
+            <Label text="catalyst" styleClass="brand"/>
+            <HBox HBox.hgrow="ALWAYS"/>
+            <Label text="New to Catalyst?" styleClass="small-copy"/>
+            <Button text="Join us  →" onAction="#openSignUp" styleClass="text-button"/>
+        </HBox>
+    </top>
+    <center>
+        <StackPane>
+            <VBox alignment="CENTER" spacing="16" maxWidth="430" styleClass="form-card">
+                <Label text="♥" styleClass="login-icon"/>
+                <Label text="WELCOME BACK" styleClass="eyebrow"/>
+                <Label text="Log in to Catalyst" styleClass="form-title"/>
+                <Label text="Your community is glad you're here." wrapText="true" styleClass="body-copy"/>
+                <TextField fx:id="emailField" promptText="✉  Email address" styleClass="input-field"/>
+                <PasswordField fx:id="passwordField" promptText="▣  Password" styleClass="input-field"/>
+                <Label fx:id="messageLabel" minHeight="20" wrapText="true" styleClass="message-label"/>
+                <Button text="Log in  →" onAction="#logIn" maxWidth="Infinity" styleClass="primary-button"/>
+                <HBox alignment="CENTER" spacing="5">
+                    <Label text="Your password is securely protected." styleClass="secure-note"/>
+                </HBox>
+            </VBox>
+        </StackPane>
+    </center>
+</BorderPane>

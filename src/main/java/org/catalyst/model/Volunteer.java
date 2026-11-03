@@ -35,7 +35,7 @@ public final class Volunteer extends User {
     }
 
     public void setPreferences(String preferences) {
-        this.preferences = preferences;
+        this.preferences = preferences == null ? "" : preferences;
     }
 
     public String getNotificationChannel() {

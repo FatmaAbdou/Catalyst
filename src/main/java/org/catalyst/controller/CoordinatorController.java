@@ -3,16 +3,21 @@ package org.catalyst.controller;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
-import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
+import javafx.scene.control.TableView;
+import javafx.scene.control.Tooltip;
+import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -37,13 +42,13 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.Set;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,16 +69,31 @@ public final class CoordinatorController implements Observer {
     @FXML private DatePicker taskDatePicker;
     @FXML private ComboBox<LocalTime> taskStartBox;
     @FXML private ComboBox<LocalTime> taskEndBox;
-    @FXML private ListView<String> requiredSkillsList;
+    @FXML private VBox requiredSkillsBox;
     @FXML private TextField volunteerLimitField;
     @FXML private ListView<VolunteerTask> taskList;
+    @FXML private ComboBox<VolunteerTask> scheduleTaskFilterBox;
+    @FXML private ComboBox<String> scheduleVolunteerFilterBox;
+    @FXML private TableView<VolunteerTask> scheduleTable;
+    @FXML private TableColumn<VolunteerTask, String> scheduleTaskColumn;
+    @FXML private TableColumn<VolunteerTask, String> scheduleVolunteerColumn;
+    @FXML private TableColumn<VolunteerTask, String> scheduleDateColumn;
+    @FXML private TableColumn<VolunteerTask, String> scheduleStartColumn;
+    @FXML private TableColumn<VolunteerTask, String> scheduleEndColumn;
     @FXML private TextField searchField;
     @FXML private ListView<Volunteer> volunteerList;
+    @FXML private Button assignButton;
+    @FXML private ComboBox<String> skillFilterBox;
+    @FXML private ComboBox<String> availabilityFilterBox;
+    @FXML private Label selectedVolunteerInfoLabel;
     @FXML private ListView<VolunteerAssignment> assignmentList;
     @FXML private ListView<ServiceHour> pendingHoursList;
     @FXML private ComboBox<String> certificateTypeBox;
     @FXML private ComboBox<VolunteerTask> certificateTaskBox;
     @FXML private TextArea certificateMessageField;
+    private List<Volunteer> searchResults = List.of();
+    private List<VolunteerAssignment> allScheduleAssignments = List.of();
+    private List<VolunteerTask> allTasks = List.of();
 
     public CoordinatorController(SceneManager sceneManager) {
         this.sceneManager = sceneManager;
@@ -93,9 +113,12 @@ public final class CoordinatorController implements Observer {
         taskDatePicker.setValue(LocalDate.now());
         volunteerLimitField.setText("1");
         certificateTypeBox.getItems().setAll("Participation", "Hours milestone", "Appreciation");
-        requiredSkillsList.setCellFactory(list -> createSkillCell());
         taskStartBox.getItems().setAll(getTimes());
         taskEndBox.getItems().setAll(getTimes());
+        configureScheduleTable();
+        assignButton.setDisable(true);
+        availabilityFilterBox.getItems().setAll("All volunteers", "Available", "Not available");
+        availabilityFilterBox.setValue("All volunteers");
         certificateTaskBox.setDisable(true);
         eventBox.setConverter(new StringConverter<>() {
             @Override
@@ -113,9 +136,25 @@ public final class CoordinatorController implements Observer {
         });
         volunteerList.setCellFactory(list -> createVolunteerCell());
         taskList.getSelectionModel().selectedItemProperty().addListener(
-                (observable, oldTask, task) -> loadAssignments(task));
+                (observable, oldTask, task) -> {
+                    loadAssignments(task);
+                    applyVolunteerFilters();
+                    updateAssignButton();
+                });
+        scheduleTaskFilterBox.valueProperty().addListener(
+                (observable, oldTask, task) -> applyScheduleFilters());
+        scheduleVolunteerFilterBox.valueProperty().addListener(
+                (observable, oldName, name) -> applyScheduleFilters());
         volunteerList.getSelectionModel().selectedItemProperty().addListener(
-                (observable, oldVolunteer, volunteer) -> loadCertificateTasks(volunteer));
+                (observable, oldVolunteer, volunteer) -> {
+                    updateVolunteerInfo(volunteer);
+                    loadCertificateTasks(volunteer);
+                    updateAssignButton();
+                });
+        skillFilterBox.valueProperty().addListener(
+                (observable, oldSkill, skill) -> applyVolunteerFilters());
+        availabilityFilterBox.valueProperty().addListener(
+                (observable, oldFilter, filter) -> applyVolunteerFilters());
         certificateTypeBox.valueProperty().addListener(
                 (observable, oldType, type) -> certificateTaskBox.setDisable(
                         !"Participation".equals(type)));
@@ -123,7 +162,10 @@ public final class CoordinatorController implements Observer {
         try {
             Map<Integer, String> events = volunteerService.getEvents();
             eventBox.getItems().setAll(events.entrySet());
-            requiredSkillsList.getItems().setAll(volunteerService.getSkills());
+            populateRequiredSkills(volunteerService.getSkills());
+            skillFilterBox.getItems().setAll("All skills");
+            skillFilterBox.getItems().addAll(volunteerService.getSkills());
+            skillFilterBox.setValue("All skills");
             loadTasks();
             searchVolunteers();
             loadPendingHours();
@@ -154,7 +196,10 @@ public final class CoordinatorController implements Observer {
                     capacity);
             taskDescriptionField.clear();
             selectedRequiredSkills.clear();
-            requiredSkillsList.refresh();
+            requiredSkillsBox.getChildren().stream()
+                    .filter(CheckBox.class::isInstance)
+                    .map(CheckBox.class::cast)
+                    .forEach(checkBox -> checkBox.setSelected(false));
             showMessage("Volunteer task created.");
             loadTasks();
         } catch (NumberFormatException exception) {
@@ -170,8 +215,8 @@ public final class CoordinatorController implements Observer {
     @FXML
     private void searchVolunteers() {
         try {
-            volunteerList.getItems().setAll(
-                    volunteerService.searchVolunteers(searchField.getText()));
+            searchResults = volunteerService.searchVolunteers(searchField.getText());
+            applyVolunteerFilters();
         } catch (IllegalArgumentException exception) {
             showMessage(exception.getMessage());
         } catch (SQLException exception) {
@@ -186,6 +231,10 @@ public final class CoordinatorController implements Observer {
         VolunteerTask task = taskList.getSelectionModel().getSelectedItem();
         if (volunteer == null || task == null) {
             showMessage("Select a volunteer and a task before assigning.");
+            return;
+        }
+        if (!volunteerService.isAvailableForTask(volunteer, task)) {
+            showMessage("This volunteer is not available during the selected task.");
             return;
         }
         try {
@@ -342,45 +391,149 @@ public final class CoordinatorController implements Observer {
     }
 
     private void loadTasks() throws SQLException {
-        taskList.getItems().setAll(volunteerService.getTasks());
+        allTasks = volunteerService.getTasks();
+        taskList.getItems().setAll(allTasks);
+        scheduleTaskFilterBox.getItems().setAll(allTasks);
+        allScheduleAssignments = volunteerService.getScheduleAssignments();
+        scheduleVolunteerFilterBox.getItems().setAll(allScheduleAssignments.stream()
+                .map(VolunteerAssignment::volunteerName).distinct().sorted().toList());
+        applyScheduleFilters();
         if (!taskList.getItems().isEmpty()) {
             taskList.getSelectionModel().selectFirst();
         } else {
             assignmentList.getItems().clear();
         }
+        applyVolunteerFilters();
     }
 
-    private ListCell<String> createSkillCell() {
-        return new ListCell<>() {
-            private final CheckBox checkBox = new CheckBox();
-
-            {
-                setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
-                checkBox.setMaxWidth(Double.MAX_VALUE);
-                checkBox.setOnAction(event -> {
-                    if (getItem() == null) {
-                        return;
-                    }
-                    if (checkBox.isSelected()) {
-                        selectedRequiredSkills.add(getItem());
-                    } else {
-                        selectedRequiredSkills.remove(getItem());
-                    }
-                });
-            }
-
+    private void configureScheduleTable() {
+        scheduleTaskColumn.setCellValueFactory(cell ->
+                new ReadOnlyStringWrapper(cell.getValue().description()));
+        scheduleVolunteerColumn.setCellValueFactory(cell ->
+                new ReadOnlyStringWrapper(allScheduleAssignments.stream()
+                        .filter(assignment -> assignment.taskId() == cell.getValue().id())
+                        .map(VolunteerAssignment::volunteerName)
+                        .distinct()
+                        .reduce((first, second) -> first + ", " + second)
+                        .orElse("No volunteers assigned")));
+        scheduleDateColumn.setCellValueFactory(cell ->
+                new ReadOnlyStringWrapper(cell.getValue().startsAt()
+                        .format(DateTimeFormatter.ofPattern("MMM d, yyyy"))));
+        scheduleStartColumn.setCellValueFactory(cell ->
+                new ReadOnlyStringWrapper(cell.getValue().startsAt()
+                        .format(DateTimeFormatter.ofPattern("h:mm a"))));
+        scheduleEndColumn.setCellValueFactory(cell ->
+                new ReadOnlyStringWrapper(cell.getValue().endsAt()
+                        .format(DateTimeFormatter.ofPattern("h:mm a"))));
+        scheduleTable.setRowFactory(table -> new TableRow<>() {
             @Override
-            protected void updateItem(String skill, boolean empty) {
-                super.updateItem(skill, empty);
-                if (empty || skill == null) {
-                    setGraphic(null);
+            protected void updateItem(VolunteerTask task, boolean empty) {
+                super.updateItem(task, empty);
+                if (empty || task == null) {
+                    setTooltip(null);
                 } else {
-                    checkBox.setText(skill);
-                    checkBox.setSelected(selectedRequiredSkills.contains(skill));
-                    setGraphic(checkBox);
+                    String volunteers = allScheduleAssignments.stream()
+                            .filter(assignment -> assignment.taskId() == task.id())
+                            .map(VolunteerAssignment::volunteerName)
+                            .distinct()
+                            .reduce((first, second) -> first + ", " + second)
+                            .orElse("No volunteers assigned");
+                    setTooltip(new Tooltip(task.description() + "\n"
+                                    + "Volunteers: " + volunteers + "\n"
+                                    + task.startsAt().format(DateTimeFormatter.ofPattern(
+                                            "EEEE, MMM d, yyyy · h:mm a"))
+                                    + " – " + task.endsAt().format(
+                                            DateTimeFormatter.ofPattern("h:mm a"))
+                                    + "\nEvent: "
+                                    + (task.eventName() == null ? "None" : task.eventName())
+                                    + "\nRequired skills: "
+                                    + (task.requiredSkills().isEmpty() ? "None"
+                                    : String.join(", ", task.requiredSkills()))));
                 }
             }
-        };
+        });
+    }
+
+    private void applyScheduleFilters() {
+        VolunteerTask task = scheduleTaskFilterBox.getValue();
+        String volunteerName = scheduleVolunteerFilterBox.getValue();
+        scheduleTable.getItems().setAll(allTasks.stream()
+                .filter(scheduledTask -> task == null || scheduledTask.id() == task.id())
+                .filter(scheduledTask -> volunteerName == null
+                        || allScheduleAssignments.stream().anyMatch(assignment ->
+                                assignment.taskId() == scheduledTask.id()
+                                        && assignment.volunteerName().equals(volunteerName)))
+                .toList());
+        scheduleTable.setPlaceholder(new Label("No tasks match these filters."));
+    }
+
+    @FXML
+    private void clearScheduleFilters() {
+        scheduleTaskFilterBox.setValue(null);
+        scheduleVolunteerFilterBox.setValue(null);
+    }
+
+    private void populateRequiredSkills(List<String> skills) {
+        requiredSkillsBox.getChildren().clear();
+        for (String skill : skills) {
+            CheckBox checkBox = new CheckBox(skill);
+            checkBox.setSelected(selectedRequiredSkills.contains(skill));
+            checkBox.setOnAction(event -> {
+                if (checkBox.isSelected()) {
+                    selectedRequiredSkills.add(skill);
+                } else {
+                    selectedRequiredSkills.remove(skill);
+                }
+            });
+            requiredSkillsBox.getChildren().add(checkBox);
+        }
+    }
+
+    private void applyVolunteerFilters() {
+        String skill = skillFilterBox.getValue();
+        String availability = availabilityFilterBox.getValue();
+        VolunteerTask selectedTask = taskList.getSelectionModel().getSelectedItem();
+        List<Volunteer> filtered = searchResults.stream()
+                .filter(volunteer -> skill == null || "All skills".equals(skill)
+                        || volunteer.getSkills().stream().anyMatch(
+                                volunteerSkill -> volunteerSkill.equalsIgnoreCase(skill)))
+                .filter(volunteer -> {
+                    if ("Available".equals(availability)) {
+                        return volunteerService.isAvailableForTask(volunteer, selectedTask);
+                    }
+                    if ("Not available".equals(availability)) {
+                        return selectedTask != null
+                                && !volunteerService.isAvailableForTask(volunteer, selectedTask);
+                    }
+                    return true;
+                })
+                .toList();
+        volunteerList.getItems().setAll(filtered);
+        volunteerList.setPlaceholder(new Label(selectedTask == null
+                ? "Select a task to check volunteer availability."
+                : "No volunteers match these filters."));
+        updateVolunteerInfo(volunteerList.getSelectionModel().getSelectedItem());
+        updateAssignButton();
+    }
+
+    private void updateAssignButton() {
+        Volunteer volunteer = volunteerList.getSelectionModel().getSelectedItem();
+        VolunteerTask task = taskList.getSelectionModel().getSelectedItem();
+        assignButton.setDisable(!volunteerService.isAvailableForTask(volunteer, task));
+    }
+
+    private void updateVolunteerInfo(Volunteer volunteer) {
+        if (volunteer == null) {
+            selectedVolunteerInfoLabel.setText("Select a volunteer to view preferences.");
+            return;
+        }
+        VolunteerTask task = taskList.getSelectionModel().getSelectedItem();
+        String availability = task == null ? "Choose a task to check availability."
+                : volunteerService.isAvailableForTask(volunteer, task)
+                ? "Available for this task." : "Not available for this task.";
+        String preferences = volunteer.getPreferences().isBlank()
+                ? "No preferences provided." : volunteer.getPreferences();
+        selectedVolunteerInfoLabel.setText("Preferences: " + preferences + "\n" + availability);
     }
 
     private ListCell<Volunteer> createVolunteerCell() {
@@ -409,12 +562,21 @@ public final class CoordinatorController implements Observer {
                         : String.join("  ·  ", volunteer.getSkills()));
                 skills.getStyleClass().add("volunteer-result-skills");
                 skills.setWrapText(true);
-                VBox details = new VBox(4, name, email, skills);
+                VolunteerTask selectedTask = taskList.getSelectionModel().getSelectedItem();
+                boolean available = volunteerService.isAvailableForTask(volunteer, selectedTask);
+                Label availability = new Label(selectedTask == null
+                        ? "Choose a task"
+                        : available ? "AVAILABLE" : "NOT AVAILABLE");
+                availability.getStyleClass().add(available
+                        ? "volunteer-availability-available"
+                        : "volunteer-availability-unavailable");
+                VBox details = new VBox(4, name, email, skills, availability);
                 HBox card = new HBox(12, avatar, details);
                 card.setAlignment(Pos.CENTER_LEFT);
                 HBox.setHgrow(details, Priority.ALWAYS);
                 setText(null);
                 setGraphic(card);
+                setOpacity(selectedTask != null && !available ? 0.58 : 1);
                 if (!getStyleClass().contains("volunteer-result-cell")) {
                     getStyleClass().add("volunteer-result-cell");
                 }

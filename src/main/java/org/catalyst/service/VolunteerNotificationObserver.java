@@ -30,6 +30,7 @@ public final class VolunteerNotificationObserver implements Observer {
         try {
             repository.queueAssignmentNotification(
                     assignment.userId(),
+                    assignment.id(),
                     "You have been assigned to volunteer task: " + assignment.taskDescription());
         } catch (SQLException exception) {
             LOGGER.log(Level.SEVERE,

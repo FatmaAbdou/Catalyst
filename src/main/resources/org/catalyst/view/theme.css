@@ -196,6 +196,101 @@
     -fx-background-radius: 10px;
 }
 
+.volunteer-availability-available {
+    -fx-text-fill: #2f6b55;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.volunteer-availability-unavailable {
+    -fx-text-fill: #78817b;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.dashboard-tabs > .tab-header-area > .tab-header-background {
+    -fx-background-color: transparent;
+}
+
+.dashboard-tabs .tab {
+    -fx-background-color: #edf1e9;
+    -fx-background-radius: 9px 9px 0 0;
+    -fx-padding: 8px 14px;
+}
+
+.dashboard-tabs .tab:selected {
+    -fx-background-color: #fffefa;
+}
+
+.dashboard-tabs .tab .tab-label {
+    -fx-text-fill: #52665a;
+    -fx-font-weight: bold;
+}
+
+.dashboard-tabs .tab:selected .tab-label {
+    -fx-text-fill: #214e3d;
+}
+
+.dashboard-tabs > .tab-content-area {
+    -fx-background-color: #fffefa;
+    -fx-background-radius: 0 10px 10px 10px;
+}
+
+.notification-badge {
+    -fx-background-color: #c65b46;
+    -fx-background-radius: 20px;
+    -fx-text-fill: white;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-min-width: 20px;
+    -fx-min-height: 20px;
+    -fx-alignment: center;
+    -fx-padding: 0 5px;
+}
+
+.unread-notification {
+    -fx-font-weight: bold;
+    -fx-text-fill: #214e3d;
+}
+
+.schedule-table {
+    -fx-background-color: #fffefa;
+    -fx-background-radius: 10px;
+    -fx-border-color: #e0e5dc;
+    -fx-border-radius: 10px;
+}
+
+.schedule-table .column-header-background {
+    -fx-background-color: #edf1e9;
+    -fx-background-radius: 10px 10px 0 0;
+}
+
+.schedule-table .column-header,
+.schedule-table .filler {
+    -fx-background-color: transparent;
+    -fx-size: 36px;
+    -fx-border-color: transparent transparent #e0e5dc transparent;
+}
+
+.schedule-table .column-header .label {
+    -fx-text-fill: #214e3d;
+    -fx-font-weight: bold;
+}
+
+.schedule-table .table-row-cell {
+    -fx-background-color: #fffefa;
+    -fx-border-color: transparent transparent #edf0e9 transparent;
+}
+
+.schedule-table .table-row-cell:filled:selected {
+    -fx-background-color: #e4eee6;
+}
+
+.schedule-table .table-cell {
+    -fx-padding: 9px;
+    -fx-text-fill: #52665a;
+}
+
 .volunteer-avatar {
     -fx-background-color: #e4eee6;
     -fx-background-radius: 50px;

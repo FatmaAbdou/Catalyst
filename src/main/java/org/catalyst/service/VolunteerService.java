@@ -1,6 +1,7 @@
 package org.catalyst.service;
 
 import org.catalyst.model.AvailabilitySlot;
+import org.catalyst.model.AssignmentNotification;
 import org.catalyst.model.Certificate;
 import org.catalyst.model.ServiceHour;
 import org.catalyst.model.Volunteer;
@@ -12,6 +13,7 @@ import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -70,8 +72,47 @@ public final class VolunteerService {
         return repository.getServiceHours(volunteer.getId());
     }
 
-    public List<String> getAssignmentNotifications(Volunteer volunteer) throws SQLException {
+    public List<AssignmentNotification> getAssignmentNotifications(Volunteer volunteer)
+            throws SQLException {
         return repository.getAssignmentNotifications(volunteer.getId());
+    }
+
+    public int getUnreadAssignmentNotificationCount(Volunteer volunteer) throws SQLException {
+        return repository.getUnreadAssignmentNotificationCount(volunteer.getId());
+    }
+
+    public void markAssignmentNotificationRead(
+            Volunteer volunteer, AssignmentNotification notification) throws SQLException {
+        if (notification == null) {
+            throw new IllegalArgumentException("Select a notification first.");
+        }
+        repository.markAssignmentNotificationRead(volunteer.getId(), notification.id());
+    }
+
+    public List<VolunteerAssignment> getScheduleAssignments() throws SQLException {
+        return repository.getAllAssignments();
+    }
+
+    public List<VolunteerAssignment> getScheduleAssignments(Volunteer volunteer)
+            throws SQLException {
+        return repository.getAssignments(volunteer.getId());
+    }
+
+    public int getApprovedHours(Volunteer volunteer) throws SQLException {
+        return repository.getApprovedHours(volunteer.getId());
+    }
+
+    public boolean isAvailableForTask(Volunteer volunteer, VolunteerTask task) {
+        if (volunteer == null || task == null
+                || !task.startsAt().toLocalDate().equals(task.endsAt().toLocalDate())) {
+            return false;
+        }
+        LocalTime startsAt = task.startsAt().toLocalTime();
+        LocalTime endsAt = task.endsAt().toLocalTime();
+        return volunteer.getAvailability().stream().anyMatch(slot ->
+                slot.day() == task.startsAt().getDayOfWeek()
+                        && !slot.start().isAfter(startsAt)
+                        && !slot.end().isBefore(endsAt));
     }
 
     public void recordHours(

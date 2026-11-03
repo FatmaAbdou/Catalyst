@@ -1,6 +1,7 @@
 package org.catalyst.repo;
 
 import org.catalyst.model.AvailabilitySlot;
+import org.catalyst.model.AssignmentNotification;
 import org.catalyst.model.ServiceHour;
 import org.catalyst.model.Volunteer;
 import org.catalyst.model.VolunteerAssignment;
@@ -12,11 +13,12 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -226,31 +228,25 @@ public final class VolunteerRepository {
 
     public List<Volunteer> searchVolunteers(String filter) throws SQLException {
         String sql = """
-                SELECT u.user_id, u.name, u.email, u.contact_info, s.skill_name
+                SELECT u.user_id, vp.volunteer_id, u.name, u.email, u.contact_info,
+                       vp.preferences, s.skill_name
                 FROM users u
                 JOIN volunteer_profiles vp ON vp.user_id = u.user_id
                 LEFT JOIN volunteer_skills vs ON vs.volunteer_id = vp.volunteer_id
                 LEFT JOIN skills s ON s.skill_id = vs.skill_id
                 WHERE u.status = 'ACTIVE'
-                  AND (? = '' OR u.name ILIKE ? OR u.email ILIKE ? OR EXISTS (
-                      SELECT 1
-                      FROM volunteer_skills matching_vs
-                      JOIN skills matching_s ON matching_s.skill_id = matching_vs.skill_id
-                      WHERE matching_vs.volunteer_id = vp.volunteer_id
-                        AND matching_s.skill_name ILIKE ?
-                  ))
+                  AND (? = '' OR u.name ILIKE ?)
                 ORDER BY u.name, s.skill_name
                 """;
         String cleanFilter = filter == null ? "" : filter.trim();
         String query = "%" + cleanFilter + "%";
         Map<Integer, Volunteer> volunteers = new LinkedHashMap<>();
         Map<Integer, List<String>> skillsByVolunteer = new LinkedHashMap<>();
-        try (PreparedStatement statement =
-                     DatabaseConnection.getInstance().getConnection().prepareStatement(sql)) {
+        Map<Integer, Integer> volunteerIds = new LinkedHashMap<>();
+        Connection connection = DatabaseConnection.getInstance().getConnection();
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, cleanFilter);
             statement.setString(2, query);
-            statement.setString(3, query);
-            statement.setString(4, query);
             try (ResultSet result = statement.executeQuery()) {
                 while (result.next()) {
                     int userId = result.getInt("user_id");
@@ -261,7 +257,9 @@ public final class VolunteerRepository {
                                 result.getString("email"),
                                 result.getString("contact_info"));
                         volunteer.setId(userId);
+                        volunteer.setPreferences(result.getString("preferences"));
                         volunteers.put(userId, volunteer);
+                        volunteerIds.put(userId, result.getInt("volunteer_id"));
                     }
                     skillsByVolunteer.computeIfAbsent(userId, id -> new ArrayList<>());
                     String skill = result.getString("skill_name");
@@ -273,6 +271,15 @@ public final class VolunteerRepository {
         }
         for (Map.Entry<Integer, Volunteer> entry : volunteers.entrySet()) {
             entry.getValue().updateSkills(skillsByVolunteer.get(entry.getKey()));
+            entry.getValue().updateAvailability(readAvailability(
+                    connection,
+                    """
+                            SELECT day_of_week, start_time, end_time
+                            FROM volunteer_availability
+                            WHERE volunteer_id = ? AND day_of_week IS NOT NULL
+                            ORDER BY day_of_week, start_time
+                            """,
+                    volunteerIds.get(entry.getKey())));
         }
         return new ArrayList<>(volunteers.values());
     }
@@ -301,24 +308,55 @@ public final class VolunteerRepository {
         return assignments;
     }
 
+    public List<VolunteerAssignment> getAllAssignments() throws SQLException {
+        String sql = """
+                SELECT a.assignment_id, a.task_id, vp.user_id, u.name,
+                       a.assigned_at, t.description, t.starts_at, t.ends_at, a.status
+                FROM volunteer_assignments a
+                JOIN volunteer_profiles vp ON vp.volunteer_id = a.volunteer_id
+                JOIN users u ON u.user_id = vp.user_id
+                JOIN volunteer_tasks t ON t.task_id = a.task_id
+                WHERE a.status = 'ASSIGNED'
+                ORDER BY t.starts_at, u.name
+                """;
+        List<VolunteerAssignment> assignments = new ArrayList<>();
+        try (PreparedStatement statement =
+                     DatabaseConnection.getInstance().getConnection().prepareStatement(sql);
+             ResultSet result = statement.executeQuery()) {
+            while (result.next()) {
+                assignments.add(readAssignment(result));
+            }
+        }
+        return assignments;
+    }
+
     public VolunteerAssignment assign(int userId, int taskId) throws SQLException {
         Connection connection = DatabaseConnection.getInstance().getConnection();
         boolean originalAutoCommit = connection.getAutoCommit();
         connection.setAutoCommit(false);
         try {
             int capacity;
+            LocalDateTime startsAt;
+            LocalDateTime endsAt;
             try (PreparedStatement statement = connection.prepareStatement(
-                    "SELECT volunteers_num FROM volunteer_tasks WHERE task_id = ? FOR UPDATE")) {
+                    "SELECT volunteers_num, starts_at, ends_at FROM volunteer_tasks "
+                            + "WHERE task_id = ? FOR UPDATE")) {
                 statement.setInt(1, taskId);
                 try (ResultSet result = statement.executeQuery()) {
                     if (!result.next()) {
                         throw new IllegalArgumentException("Select a task first.");
                     }
                     capacity = result.getInt("volunteers_num");
+                    startsAt = result.getTimestamp("starts_at").toLocalDateTime();
+                    endsAt = result.getTimestamp("ends_at").toLocalDateTime();
                 }
             }
 
             int volunteerId = findVolunteerId(connection, userId);
+            if (!isAvailable(connection, volunteerId, startsAt, endsAt)) {
+                throw new IllegalArgumentException(
+                        "This volunteer is not available during the task schedule.");
+            }
             int assignedCount;
             try (PreparedStatement statement = connection.prepareStatement(
                     "SELECT COUNT(*) FROM volunteer_assignments "
@@ -403,23 +441,86 @@ public final class VolunteerRepository {
 
     public void recordHours(int userId, int assignmentId, LocalDate date, BigDecimal hours)
             throws SQLException {
-        String sql = """
-                INSERT INTO service_records (assignment_id, service_date, hours)
-                SELECT a.assignment_id, ?, ?
-                FROM volunteer_assignments a
-                JOIN volunteer_profiles vp ON vp.volunteer_id = a.volunteer_id
-                WHERE a.assignment_id = ? AND vp.user_id = ? AND a.status = 'ASSIGNED'
-                """;
-        try (PreparedStatement statement =
-                     DatabaseConnection.getInstance().getConnection().prepareStatement(sql)) {
-            statement.setDate(1, Date.valueOf(date));
-            statement.setBigDecimal(2, hours);
-            statement.setInt(3, assignmentId);
-            statement.setInt(4, userId);
-            if (statement.executeUpdate() != 1) {
-                throw new IllegalArgumentException("Select one of your active assignments.");
+        Connection connection = DatabaseConnection.getInstance().getConnection();
+        boolean originalAutoCommit = connection.getAutoCommit();
+        connection.setAutoCommit(false);
+        try {
+            LocalDateTime startsAt;
+            LocalDateTime endsAt;
+            try (PreparedStatement statement = connection.prepareStatement("""
+                    SELECT t.starts_at, t.ends_at
+                    FROM volunteer_assignments a
+                    JOIN volunteer_profiles vp ON vp.volunteer_id = a.volunteer_id
+                    JOIN volunteer_tasks t ON t.task_id = a.task_id
+                    WHERE a.assignment_id = ? AND vp.user_id = ? AND a.status = 'ASSIGNED'
+                    FOR UPDATE OF a
+                    """)) {
+                statement.setInt(1, assignmentId);
+                statement.setInt(2, userId);
+                try (ResultSet result = statement.executeQuery()) {
+                    if (!result.next()) {
+                        throw new IllegalArgumentException("Select one of your active assignments.");
+                    }
+                    startsAt = result.getTimestamp("starts_at").toLocalDateTime();
+                    endsAt = result.getTimestamp("ends_at").toLocalDateTime();
+                }
             }
+
+            if (date.isBefore(startsAt.toLocalDate()) || date.isAfter(endsAt.toLocalDate())) {
+                throw new IllegalArgumentException(
+                        "Choose a service date within the task schedule.");
+            }
+
+            BigDecimal alreadyLogged;
+            try (PreparedStatement statement = connection.prepareStatement(
+                    "SELECT COALESCE(SUM(hours), 0) FROM service_records WHERE assignment_id = ?")) {
+                statement.setInt(1, assignmentId);
+                try (ResultSet result = statement.executeQuery()) {
+                    result.next();
+                    alreadyLogged = result.getBigDecimal(1);
+                }
+            }
+            BigDecimal scheduledHours = BigDecimal.valueOf(
+                    java.time.Duration.between(startsAt, endsAt).toSeconds())
+                    .divide(BigDecimal.valueOf(3600), 2, java.math.RoundingMode.DOWN);
+            if (alreadyLogged.add(hours).compareTo(scheduledHours) > 0) {
+                throw new IllegalArgumentException(
+                        "Total logged hours cannot exceed the task's scheduled duration of "
+                                + scheduledHours.stripTrailingZeros().toPlainString() + " hours.");
+            }
+            try (PreparedStatement statement = connection.prepareStatement(
+                    "INSERT INTO service_records (assignment_id, service_date, hours) "
+                            + "VALUES (?, ?, ?)")) {
+                statement.setInt(1, assignmentId);
+                statement.setDate(2, Date.valueOf(date));
+                statement.setBigDecimal(3, hours);
+                statement.executeUpdate();
+            }
+            connection.commit();
+        } catch (SQLException | RuntimeException exception) {
+            rollback(connection, exception);
+            throw exception;
+        } finally {
+            connection.setAutoCommit(originalAutoCommit);
         }
+    }
+
+    private boolean isAvailable(
+            Connection connection, int volunteerId, LocalDateTime startsAt, LocalDateTime endsAt)
+            throws SQLException {
+        if (!startsAt.toLocalDate().equals(endsAt.toLocalDate())) {
+            return false;
+        }
+        LocalTime taskStart = startsAt.toLocalTime();
+        LocalTime taskEnd = endsAt.toLocalTime();
+        return readAvailability(connection, """
+                SELECT day_of_week, start_time, end_time
+                FROM volunteer_availability
+                WHERE volunteer_id = ? AND day_of_week IS NOT NULL
+                """, volunteerId).stream().anyMatch(slot ->
+                slot.day() == startsAt.getDayOfWeek()
+                        && !slot.start().isAfter(taskStart)
+                        && !slot.end().isBefore(taskEnd));
     }
 
     public List<ServiceHour> getPendingServiceHours() throws SQLException {
@@ -512,43 +613,97 @@ public final class VolunteerRepository {
         return tasks;
     }
 
-    public void queueAssignmentNotification(int userId, String message) throws SQLException {
+    public void queueAssignmentNotification(int userId, int assignmentId, String message)
+            throws SQLException {
         String sql = """
                 INSERT INTO communications
-                    (recipient_user_id, channel, message_content, sending_status)
-                SELECT user_id, COALESCE(preferred_channel, 'EMAIL'), ?, 'PENDING'
+                    (recipient_user_id, channel, message_content, sending_status, assignment_id)
+                SELECT user_id, COALESCE(preferred_channel, 'EMAIL'), ?, 'PENDING', ?
                 FROM users
                 WHERE user_id = ?
                 """;
         try (PreparedStatement statement =
                      DatabaseConnection.getInstance().getConnection().prepareStatement(sql)) {
             statement.setString(1, message);
-            statement.setInt(2, userId);
+            statement.setInt(2, assignmentId);
+            statement.setInt(3, userId);
             if (statement.executeUpdate() != 1) {
                 throw new SQLException("The volunteer assignment notification could not be queued.");
             }
         }
     }
 
-    public List<String> getAssignmentNotifications(int userId) throws SQLException {
+    public List<AssignmentNotification> getAssignmentNotifications(int userId) throws SQLException {
         String sql = """
-                SELECT message_content, sent_at
-                FROM communications
-                WHERE recipient_user_id = ? AND sending_status = 'PENDING'
+                SELECT c.communication_id, c.message_content, c.sent_at, c.read_at,
+                       t.task_id, t.event_id, e.name AS event_name, t.description,
+                       t.starts_at, t.ends_at, t.volunteers_num
+                FROM communications c
+                JOIN volunteer_assignments a ON a.assignment_id = c.assignment_id
+                JOIN volunteer_tasks t ON t.task_id = a.task_id
+                LEFT JOIN events e ON e.event_id = t.event_id
+                WHERE c.recipient_user_id = ? AND c.assignment_id IS NOT NULL
                 ORDER BY sent_at DESC
                 """;
-        List<String> notifications = new ArrayList<>();
+        List<AssignmentNotification> notifications = new ArrayList<>();
+        Connection connection = DatabaseConnection.getInstance().getConnection();
         try (PreparedStatement statement =
-                     DatabaseConnection.getInstance().getConnection().prepareStatement(sql)) {
+                     connection.prepareStatement(sql)) {
             statement.setInt(1, userId);
             try (ResultSet result = statement.executeQuery()) {
                 while (result.next()) {
-                    notifications.add(result.getTimestamp("sent_at") + " · "
-                            + result.getString("message_content"));
+                    int taskId = result.getInt("task_id");
+                    VolunteerTask task = new VolunteerTask(
+                            taskId,
+                            (Integer) result.getObject("event_id"),
+                            result.getString("event_name"),
+                            result.getString("description"),
+                            result.getTimestamp("starts_at").toLocalDateTime(),
+                            result.getTimestamp("ends_at").toLocalDateTime(),
+                            getTaskSkills(connection, taskId),
+                            result.getInt("volunteers_num"));
+                    notifications.add(new AssignmentNotification(
+                            result.getInt("communication_id"),
+                            result.getString("message_content"),
+                            result.getTimestamp("sent_at").toLocalDateTime(),
+                            result.getTimestamp("read_at") != null,
+                            task));
                 }
             }
         }
         return notifications;
+    }
+
+    public int getUnreadAssignmentNotificationCount(int userId) throws SQLException {
+        String sql = """
+                SELECT COUNT(*)
+                FROM communications
+                WHERE recipient_user_id = ? AND assignment_id IS NOT NULL AND read_at IS NULL
+                """;
+        try (PreparedStatement statement =
+                     DatabaseConnection.getInstance().getConnection().prepareStatement(sql)) {
+            statement.setInt(1, userId);
+            try (ResultSet result = statement.executeQuery()) {
+                result.next();
+                return result.getInt(1);
+            }
+        }
+    }
+
+    public void markAssignmentNotificationRead(int userId, int notificationId)
+            throws SQLException {
+        String sql = """
+                UPDATE communications
+                SET read_at = CURRENT_TIMESTAMP
+                WHERE communication_id = ? AND recipient_user_id = ?
+                  AND assignment_id IS NOT NULL AND read_at IS NULL
+                """;
+        try (PreparedStatement statement =
+                     DatabaseConnection.getInstance().getConnection().prepareStatement(sql)) {
+            statement.setInt(1, notificationId);
+            statement.setInt(2, userId);
+            statement.executeUpdate();
+        }
     }
 
     public String addSkill(String name) throws SQLException {
@@ -618,8 +773,8 @@ public final class VolunteerRepository {
                 for (AvailabilitySlot slot : volunteer.getAvailability()) {
                     statement.setInt(1, volunteerId);
                     statement.setString(2, slot.day().name());
-                    statement.setTime(3, Time.valueOf(slot.start()));
-                    statement.setTime(4, Time.valueOf(slot.end()));
+                    statement.setObject(3, slot.start());
+                    statement.setObject(4, slot.end());
                     statement.addBatch();
                 }
                 statement.executeBatch();
@@ -708,8 +863,8 @@ public final class VolunteerRepository {
                 while (result.next()) {
                     slots.add(new AvailabilitySlot(
                             DayOfWeek.valueOf(result.getString("day_of_week")),
-                            result.getTime("start_time").toLocalTime(),
-                            result.getTime("end_time").toLocalTime()));
+                            result.getObject("start_time", java.time.LocalTime.class),
+                            result.getObject("end_time", java.time.LocalTime.class)));
                 }
             }
         }

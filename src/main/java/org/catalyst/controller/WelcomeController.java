@@ -3,6 +3,7 @@ package org.catalyst.controller;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import org.catalyst.model.Volunteer;
 import org.catalyst.view.SceneManager;
 
 import java.io.IOException;
@@ -19,7 +20,9 @@ public final class WelcomeController {
     @FXML private Button signUpButton;
     @FXML private Button topSignUpButton;
     @FXML private Button logInButton;
+    @FXML private Button beneficiariesButton;
     @FXML private Button logOutButton;
+    @FXML private Button volunteerButton;
     @FXML private Button donateButton;
 
     public WelcomeController(SceneManager sceneManager) {
@@ -37,6 +40,8 @@ public final class WelcomeController {
         setShown(topSignUpButton, !signedIn);
         setShown(logInButton, !signedIn);
         setShown(logOutButton, signedIn);
+        setShown(beneficiariesButton, sceneManager.canManageBeneficiaries());
+        setShown(volunteerButton, user instanceof Volunteer);
         setShown(donateButton, sceneManager.getDonationService().canDonate(user));
     }
 
@@ -51,6 +56,11 @@ public final class WelcomeController {
     }
 
     @FXML
+    private void openBeneficiaries() {
+        navigate(sceneManager::showBeneficiaryList);
+    }
+
+    @FXML
     private void openDonation() {
         navigate(sceneManager::showDonation);
     }
@@ -61,11 +71,17 @@ public final class WelcomeController {
         navigate(sceneManager::showWelcome);
     }
 
+    @FXML
+    private void openVolunteerDashboard() {
+        navigate(sceneManager::showVolunteerDashboard);
+    }
+
     private void navigate(ViewAction action) {
         try {
             action.run();
         } catch (IOException exception) {
             LOGGER.log(Level.SEVERE, "Could not open the requested page.", exception);
+            welcomeMessage.setText("We couldn't open that page. Please try again.");
         }
     }
 

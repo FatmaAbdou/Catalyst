@@ -11,6 +11,7 @@ import org.catalyst.model.user.DonationOfficerFactory;
 import org.catalyst.model.user.DonorFactory;
 import org.catalyst.model.user.UserFactory;
 import org.catalyst.model.user.UserType;
+import org.catalyst.model.user.VolunteerCoordinatorFactory;
 import org.catalyst.model.user.VolunteerFactory;
 import org.catalyst.service.AuthService;
 import org.catalyst.view.SceneManager;
@@ -45,7 +46,9 @@ public final class SignUpController {
 
     @FXML
     private void initialize() {
-        userTypeBox.getItems().setAll(UserType.DONOR, UserType.VOLUNTEER, UserType.DONATION_OFFICER);
+        userTypeBox.getItems().setAll(
+                UserType.DONOR, UserType.VOLUNTEER,
+                UserType.DONATION_OFFICER, UserType.VOLUNTEER_COORDINATOR);
         userTypeBox.setValue(UserType.VOLUNTEER);
         updateOrganizationVisibility();
         userTypeBox.valueProperty().addListener((observable, oldValue, newValue) ->
@@ -65,6 +68,7 @@ public final class SignUpController {
                 case DONOR -> new DonorFactory();
                 case VOLUNTEER -> new VolunteerFactory();
                 case DONATION_OFFICER -> new DonationOfficerFactory();
+                case VOLUNTEER_COORDINATOR -> new VolunteerCoordinatorFactory();
                 case null -> throw new IllegalArgumentException("Choose an account type.");
                 default -> throw new IllegalArgumentException("Choose a public account type.");
             };

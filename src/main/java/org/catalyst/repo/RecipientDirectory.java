@@ -1,4 +1,6 @@
-package org.catalyst.communication;
+package org.catalyst.repo;
+
+import org.catalyst.model.Recipient;
 
 import org.catalyst.model.User;
 import java.util.ArrayList;

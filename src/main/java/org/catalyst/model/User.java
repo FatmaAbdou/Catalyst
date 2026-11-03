@@ -1,6 +1,5 @@
 package org.catalyst.model;
 
-import org.catalyst.communication.Recipient;
 
 /** Shared details for the account types available on the sign-up page. */
 public abstract class User implements Recipient {

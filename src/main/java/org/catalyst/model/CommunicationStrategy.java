@@ -1,4 +1,4 @@
-package org.catalyst.communication;
+package org.catalyst.model;
 
 /** Defines the operations shared by all communication channels. */
 public interface CommunicationStrategy {

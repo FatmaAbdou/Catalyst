@@ -1,4 +1,13 @@
-package org.catalyst.communication;
+package org.catalyst.service;
+
+import org.catalyst.model.CommunicationStrategy;
+import org.catalyst.model.DeliveryResult;
+import org.catalyst.model.EmailChannel;
+import org.catalyst.model.Message;
+import org.catalyst.model.Recipient;
+import org.catalyst.model.SMSChannel;
+import org.catalyst.repo.MessageLog;
+import org.catalyst.repo.RecipientDirectory;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package org.catalyst.communication;
+package org.catalyst.model;
 
 /** Shares account details and posting operations between social-media strategies. */
 public abstract class SocialMediaChannel implements CommunicationStrategy {

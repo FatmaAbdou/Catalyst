@@ -1,4 +1,4 @@
-package org.catalyst.communication;
+package org.catalyst.model;
 
 import java.time.LocalDateTime;
 

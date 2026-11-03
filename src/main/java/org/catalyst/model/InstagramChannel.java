@@ -1,14 +1,14 @@
-package org.catalyst.communication;
+package org.catalyst.model;
 
-/** Simulates publishing a post on the organization's Facebook page. */
-public class FacebookChannel extends SocialMediaChannel {
-    public FacebookChannel(String account) {
+/** Simulates publishing a caption on the organization's Instagram account. */
+public class InstagramChannel extends SocialMediaChannel {
+    public InstagramChannel(String account) {
         super(account);
     }
 
     @Override
     public String getChannel() {
-        return "facebook";
+        return "instagram";
     }
 
     @Override
@@ -18,7 +18,7 @@ public class FacebookChannel extends SocialMediaChannel {
                     "Public posts must not contain personal recipients.");
         }
         if (!hasAccount()) {
-            return new DeliveryResult("FAILED", getChannel(), null, "Set the organization's Facebook page.");
+            return new DeliveryResult("FAILED", getChannel(), null, "Set the organization's Instagram account.");
         }
         publish(formatPost(message));
         return new DeliveryResult("SIMULATED", getChannel(), null, null);
@@ -26,14 +26,13 @@ public class FacebookChannel extends SocialMediaChannel {
 
     @Override
     protected String formatPost(Message message) {
-        return message.getSubject().isBlank() ? message.getBody()
-                : message.getSubject() + "\n" + message.getBody();
+        return message.getBody();
     }
 
     @Override
     protected void publish(String post) {
-        System.out.println("[DEMO FACEBOOK] Page: " + account);
-        System.out.println(post);
+        System.out.println("[DEMO INSTAGRAM] Account: " + account);
+        System.out.println("Caption: " + post);
     }
 }
 

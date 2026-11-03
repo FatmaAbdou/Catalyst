@@ -1,4 +1,4 @@
-package org.catalyst.communication;
+package org.catalyst.model;
 
 /** Defines the contact details and notification preferences needed to receive messages. */
 public interface Recipient {

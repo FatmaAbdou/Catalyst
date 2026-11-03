@@ -1,4 +1,8 @@
-package org.catalyst.communication;
+package org.catalyst.repo;
+
+import org.catalyst.model.DeliveryResult;
+import org.catalyst.model.Message;
+import org.catalyst.model.Recipient;
 
 import java.util.ArrayList;
 import java.util.List;

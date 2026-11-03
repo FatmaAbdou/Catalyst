@@ -4,6 +4,7 @@ import org.catalyst.model.AssistanceRecord;
 import org.catalyst.model.Beneficiary;
 import org.catalyst.model.User;
 import org.catalyst.model.UserType;
+import org.catalyst.repo.AssistanceCategoryRepository;
 import org.catalyst.repo.AssistanceRepository;
 import org.catalyst.repo.BeneficiaryRepository;
 
@@ -15,6 +16,7 @@ public final class BeneficiaryService {
 
     private final BeneficiaryRepository beneficiaryRepository;
     private final AssistanceRepository assistanceRepository;
+    private final AssistanceCategoryRepository categoryRepository;
 
     public BeneficiaryService() {
         this(
@@ -26,12 +28,34 @@ public final class BeneficiaryService {
     public BeneficiaryService(
             BeneficiaryRepository beneficiaryRepository,
             AssistanceRepository assistanceRepository) {
+        this(beneficiaryRepository, assistanceRepository, new AssistanceCategoryRepository());
+    }
+
+    public BeneficiaryService(
+            BeneficiaryRepository beneficiaryRepository,
+            AssistanceRepository assistanceRepository,
+            AssistanceCategoryRepository categoryRepository) {
 
         this.beneficiaryRepository =
                 Objects.requireNonNull(beneficiaryRepository);
 
         this.assistanceRepository =
                 Objects.requireNonNull(assistanceRepository);
+        this.categoryRepository = Objects.requireNonNull(categoryRepository);
+    }
+
+    public Beneficiary getBeneficiaryById(User actor, int beneficiaryID) throws SQLException {
+        requireOfficer(actor);
+        if (beneficiaryID <= 0) {
+            throw new IllegalArgumentException("Choose a saved beneficiary.");
+        }
+        return beneficiaryRepository.findById(beneficiaryID)
+                .orElseThrow(() -> new IllegalArgumentException("The beneficiary does not exist."));
+    }
+
+    public List<String> getAssistanceCategories(User actor) throws SQLException {
+        requireOfficer(actor);
+        return categoryRepository.findAllNames();
     }
 
     public void createBeneficiary(

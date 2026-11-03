@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.catalyst.controller.RecordAssistanceController"
+            styleClass="page">
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="top-bar">
+            <padding><Insets top="16" right="32" bottom="16" left="32"/></padding>
+            <Label text="catalyst" styleClass="brand"/>
+            <HBox HBox.hgrow="ALWAYS"/>
+            <Label fx:id="officerLabel" styleClass="small-copy"/>
+        </HBox>
+    </top>
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="form-scroll">
+            <content>
+                <VBox alignment="TOP_CENTER">
+                    <padding><Insets top="28" right="32" bottom="28" left="32"/></padding>
+                    <VBox spacing="12" maxWidth="640" styleClass="form-card">
+                        <Label text="Record assistance" styleClass="form-title"/>
+                        <Label fx:id="beneficiaryLabel" wrapText="true" styleClass="body-copy"/>
+                        <Label text="Record assistance that has already been delivered." wrapText="true" styleClass="small-copy"/>
+
+                        <Label text="Delivery date *" styleClass="field-label"/>
+                        <DatePicker fx:id="deliveryDatePicker" accessibleText="Delivery date"
+                                    maxWidth="Infinity" styleClass="input-field"/>
+                        <Label text="Aid category *" styleClass="field-label"/>
+                        <Label text="Purpose of the aid, such as food, housing or general support."
+                               wrapText="true" styleClass="small-copy"/>
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <ComboBox fx:id="categoryBox" promptText="Choose the purpose of the aid"
+                                      accessibleText="Assistance category" maxWidth="Infinity"
+                                      HBox.hgrow="ALWAYS" styleClass="input-field"/>
+                            <Button text="Reload categories" onAction="#reloadCategories" styleClass="nav-button"/>
+                        </HBox>
+                        <Label text="Assistance type *" styleClass="field-label"/>
+                        <Label text="Monetary means money; in-kind means physical items."
+                               wrapText="true" styleClass="small-copy"/>
+                        <ComboBox fx:id="typeBox" accessibleText="Assistance type"
+                                  maxWidth="Infinity" styleClass="input-field"/>
+
+                        <VBox fx:id="monetaryFields" spacing="10">
+                            <Label text="Amount *" styleClass="field-label"/>
+                            <TextField fx:id="amountField" promptText="For example, 250.00"
+                                       accessibleText="Monetary amount" styleClass="input-field"/>
+                        </VBox>
+                        <VBox fx:id="inKindFields" spacing="10" visible="false" managed="false">
+                            <Label text="Item description *" styleClass="field-label"/>
+                            <TextField fx:id="descriptionField" accessibleText="Item description" styleClass="input-field"/>
+                            <Label text="Quantity *" styleClass="field-label"/>
+                            <TextField fx:id="quantityField" promptText="Positive whole number"
+                                       accessibleText="Item quantity" styleClass="input-field"/>
+                            <Label text="Unit *" styleClass="field-label"/>
+                            <TextField fx:id="unitField" promptText="For example, boxes or bags"
+                                       accessibleText="Item unit" styleClass="input-field"/>
+                        </VBox>
+
+                        <Label text="Notes" styleClass="field-label"/>
+                        <TextArea fx:id="notesField" wrapText="true" accessibleText="Assistance notes" styleClass="notes-area"/>
+                        <Label fx:id="messageLabel" minHeight="20" wrapText="true" styleClass="message-label"/>
+                        <HBox alignment="CENTER_RIGHT" spacing="10">
+                            <Button fx:id="cancelButton" text="Cancel" onAction="#cancel" styleClass="nav-button"/>
+                            <Button fx:id="saveButton" text="Record assistance" onAction="#save" styleClass="primary-button"/>
+                        </HBox>
+                    </VBox>
+                </VBox>
+            </content>
+        </ScrollPane>
+    </center>
+</BorderPane>

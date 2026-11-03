@@ -1,4 +1,4 @@
-package org.catalyst.model;
+package org.catalyst.model.Event;
 
 public final class WorkshopEvent extends Event {
     String instructor;

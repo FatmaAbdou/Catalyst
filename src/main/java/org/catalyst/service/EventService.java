@@ -1,10 +1,10 @@
 package org.catalyst.service;
 
-import org.catalyst.model.Event;
-import org.catalyst.model.EventDetails;
-import org.catalyst.model.EventFactory;
+import org.catalyst.model.Event.Event;
+import org.catalyst.model.Event.EventDetails;
+import org.catalyst.model.Event.EventFactory;
 import org.catalyst.repo.EventRepository;
-import org.catalyst.model.EventSummary;
+import org.catalyst.model.Event.EventSummary;
 import java.util.List;
 
 import java.sql.SQLException;

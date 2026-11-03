@@ -1,8 +1,8 @@
 package org.catalyst.service;
 
 
-import org.catalyst.model.RegistrationStatus;
-import org.catalyst.model.Ticket;
+import org.catalyst.model.Event.RegistrationStatus;
+import org.catalyst.model.Event.Ticket;
 
 public final class Registration {
     private final int id;

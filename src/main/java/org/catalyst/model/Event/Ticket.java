@@ -1,4 +1,4 @@
-package org.catalyst.model;
+package org.catalyst.model.Event;
 
 
 import java.time.Instant;

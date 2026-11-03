@@ -1,7 +1,7 @@
 package org.catalyst.repo;
 
 
-import org.catalyst.model.Event;
+import org.catalyst.model.Event.Event;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -10,8 +10,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import org.catalyst.model.EventDetails;
-import org.catalyst.model.EventSummary;
+import org.catalyst.model.Event.EventDetails;
+import org.catalyst.model.Event.EventSummary;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;

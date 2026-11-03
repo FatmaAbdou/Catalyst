@@ -1,5 +1,8 @@
 package org.catalyst.model;
 
+import org.catalyst.model.Event.RegistrationStatus;
+import org.catalyst.model.Event.Ticket;
+
 public final class Registration {
     private final int id;
     private final int userId;

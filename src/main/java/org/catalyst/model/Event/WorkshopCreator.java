@@ -1,6 +1,6 @@
-package org.catalyst.model;
+package org.catalyst.model.Event;
 
-public class WorkshopCreator extends EventFactory{
+public class WorkshopCreator extends EventFactory {
     @Override
     public Event createEvent(EventDetails details){
         WorkshopEvent event = new WorkshopEvent(details);

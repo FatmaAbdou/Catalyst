@@ -1,4 +1,4 @@
-package org.catalyst.model;
+package org.catalyst.model.Event;
 
 public enum EventStatus {
     UPCOMING,

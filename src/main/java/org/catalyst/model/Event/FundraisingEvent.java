@@ -1,4 +1,4 @@
-package org.catalyst.model;
+package org.catalyst.model.Event;
 
 public final class FundraisingEvent extends Event {
     float fundraisingGoal;

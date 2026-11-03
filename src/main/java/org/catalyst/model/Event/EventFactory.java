@@ -1,4 +1,4 @@
-package org.catalyst.model;
+package org.catalyst.model.Event;
 
 public abstract class EventFactory {
     public abstract Event createEvent(EventDetails details);

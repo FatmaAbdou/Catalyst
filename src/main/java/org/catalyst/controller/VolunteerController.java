@@ -5,12 +5,14 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuButton;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.util.StringConverter;
 import org.catalyst.model.AvailabilitySlot;
@@ -54,8 +56,11 @@ public final class VolunteerController {
     @FXML private ListView<AvailabilitySlot> availabilityList;
     @FXML private TextArea preferencesField;
     @FXML private ComboBox<String> channelBox;
-    @FXML private ListView<String> assignmentsList;
-    @FXML private ListView<String> hoursList;
+    @FXML private ListView<VolunteerAssignment> assignmentsList;
+    @FXML private ListView<ServiceHour> hoursList;
+    @FXML private ListView<String> notificationsList;
+    @FXML private DatePicker hoursDatePicker;
+    @FXML private TextField hoursAmountField;
 
     public VolunteerController(SceneManager sceneManager) {
         this.sceneManager = sceneManager;
@@ -70,6 +75,7 @@ public final class VolunteerController {
         }
 
         greetingLabel.setText("Hello, " + volunteer.getName());
+        hoursDatePicker.setValue(java.time.LocalDate.now());
         selectedSkillsList.getItems().setAll(selectedSkills);
         availabilityList.setItems(availabilitySlots);
         dayBox.getItems().setAll(DayOfWeek.values());
@@ -96,18 +102,7 @@ public final class VolunteerController {
             preferencesField.setText(volunteer.getPreferences());
             channelBox.setValue(volunteer.getNotificationChannel());
             loadSkillMenu(volunteerService.getSkills());
-            assignmentsList.getItems().setAll(
-                    volunteerService.getAssignments(volunteer).stream()
-                            .map(VolunteerAssignment::toString).toList());
-            hoursList.getItems().setAll(
-                    volunteerService.getServiceHours(volunteer).stream()
-                            .map(ServiceHour::toString).toList());
-            if (assignmentsList.getItems().isEmpty()) {
-                assignmentsList.getItems().add("No assignments yet.");
-            }
-            if (hoursList.getItems().isEmpty()) {
-                hoursList.getItems().add("No service hours recorded yet.");
-            }
+            refreshActivity(volunteer);
         } catch (SQLException exception) {
             LOGGER.log(Level.SEVERE, "Could not load the volunteer profile.", exception);
             showMessage("We could not load your volunteering details. Please try again.");
@@ -231,7 +226,6 @@ public final class VolunteerController {
             goHome();
             return;
         }
-
         try {
             volunteerService.save(
                     volunteer,
@@ -246,6 +240,41 @@ public final class VolunteerController {
             LOGGER.log(Level.SEVERE, "Could not save the volunteer profile.", exception);
             showMessage("We could not save your details. Please try again.");
         }
+    }
+
+    @FXML
+    private void logServiceHours() {
+        if (!(sceneManager.getCurrentUser() instanceof Volunteer volunteer)) {
+            goHome();
+            return;
+        }
+        try {
+            volunteerService.recordHours(
+                    volunteer,
+                    assignmentsList.getSelectionModel().getSelectedItem(),
+                    hoursDatePicker.getValue(),
+                    new java.math.BigDecimal(hoursAmountField.getText().trim()));
+            hoursAmountField.clear();
+            refreshActivity(volunteer);
+            showMessage("Service hours submitted for coordinator approval.");
+        } catch (NumberFormatException exception) {
+            showMessage("Enter a valid number of hours.");
+        } catch (IllegalArgumentException exception) {
+            showMessage(exception.getMessage());
+        } catch (SQLException exception) {
+            LOGGER.log(Level.SEVERE, "Could not submit service hours.", exception);
+            showMessage("Service hours could not be submitted. Please try again.");
+        }
+    }
+
+    private void refreshActivity(Volunteer volunteer) throws SQLException {
+        assignmentsList.getItems().setAll(volunteerService.getAssignments(volunteer));
+        hoursList.getItems().setAll(volunteerService.getServiceHours(volunteer));
+        notificationsList.getItems().setAll(
+                volunteerService.getAssignmentNotifications(volunteer));
+        assignmentsList.setPlaceholder(new Label("No assignments yet."));
+        hoursList.setPlaceholder(new Label("No service hours have been submitted yet."));
+        notificationsList.setPlaceholder(new Label("No new assignment notifications."));
     }
 
     @FXML

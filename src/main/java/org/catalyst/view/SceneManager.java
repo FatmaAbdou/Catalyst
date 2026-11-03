@@ -8,9 +8,11 @@ import org.catalyst.model.User;
 import org.catalyst.model.Volunteer;
 import org.catalyst.repo.UserRepository;
 import org.catalyst.repo.VolunteerRepository;
+import org.catalyst.service.AssignmentService;
 import org.catalyst.service.AuthService;
 import org.catalyst.service.PasswordHasher;
 import org.catalyst.service.VolunteerService;
+import org.catalyst.service.VolunteerNotificationObserver;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -20,19 +22,30 @@ public final class SceneManager {
     private final Stage stage;
     private Scene scene;
     private final AuthService authService = new AuthService(new UserRepository(), new PasswordHasher());
-    private final VolunteerService volunteerService = new VolunteerService(new VolunteerRepository());
+    private final VolunteerRepository volunteerRepository = new VolunteerRepository();
+    private final VolunteerService volunteerService = new VolunteerService(volunteerRepository);
+    private final AssignmentService assignmentService = new AssignmentService(volunteerRepository);
     private User currentUser;
 
     public SceneManager(Stage stage) {
         this.stage = stage;
+        assignmentService.addObserver(new VolunteerNotificationObserver(volunteerRepository));
     }
 
     public AuthService getAuthService() {
         return authService;
     }
 
+    public Stage getStage() {
+        return stage;
+    }
+
     public VolunteerService getVolunteerService() {
         return volunteerService;
+    }
+
+    public AssignmentService getAssignmentService() {
+        return assignmentService;
     }
 
     public User getCurrentUser() {
@@ -57,6 +70,10 @@ public final class SceneManager {
 
     public void showVolunteerDashboard() throws IOException {
         show("volunteer.fxml");
+    }
+
+    public void showCoordinatorDashboard() throws IOException {
+        show("coordinator.fxml");
     }
 
     private void show(String fileName) throws IOException {

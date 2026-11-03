@@ -52,7 +52,8 @@ public final class AuthService {
                 throw new IllegalArgumentException("Choose an account type.");
             }
             if (userFactory.getUserType() != UserType.DONOR
-                    && userFactory.getUserType() != UserType.VOLUNTEER) {
+                    && userFactory.getUserType() != UserType.VOLUNTEER
+                    && userFactory.getUserType() != UserType.VOLUNTEER_COORDINATOR) {
                 throw new IllegalArgumentException("Staff accounts cannot be created through sign-up.");
             }
             if (cleanOrganization.length() > 200) {

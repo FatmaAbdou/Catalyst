@@ -179,6 +179,69 @@
     -fx-wrap-text: true;
 }
 
+.activity-list .list-cell:filled:selected {
+    -fx-background-color: #e4eee6;
+    -fx-background-radius: 8px;
+    -fx-text-fill: #214e3d;
+}
+
+.volunteer-result-cell {
+    -fx-padding: 7px 8px;
+    -fx-border-color: transparent transparent #e7ebe3 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.volunteer-result-cell:selected {
+    -fx-background-color: #eaf2eb;
+    -fx-background-radius: 10px;
+}
+
+.volunteer-avatar {
+    -fx-background-color: #e4eee6;
+    -fx-background-radius: 50px;
+    -fx-text-fill: #2f6b55;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.volunteer-result-name {
+    -fx-text-fill: #214e3d;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.volunteer-result-email {
+    -fx-text-fill: #68766d;
+    -fx-font-size: 12px;
+}
+
+.volunteer-result-skills {
+    -fx-text-fill: #b87543;
+    -fx-font-size: 11px;
+}
+
+.check-box {
+    -fx-text-fill: #435b4c;
+    -fx-font-size: 13px;
+    -fx-padding: 5px 8px;
+}
+
+.check-box .box {
+    -fx-background-color: #fffefa;
+    -fx-border-color: #cbd6cc;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+}
+
+.check-box:selected .mark {
+    -fx-background-color: #fffefa;
+}
+
+.check-box:selected .box {
+    -fx-background-color: #2f6b55;
+    -fx-border-color: #2f6b55;
+}
+
 .form-card {
     -fx-background-color: #fffefa;
     -fx-background-radius: 20px;
@@ -239,6 +302,20 @@
 
 .secondary-button:hover {
     -fx-background-color: #dce9df;
+}
+
+.danger-button {
+    -fx-background-color: #f8e9e5;
+    -fx-background-radius: 9px;
+    -fx-text-fill: #a74136;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 9px 14px;
+    -fx-cursor: hand;
+}
+
+.danger-button:hover {
+    -fx-background-color: #f1d8d1;
 }
 
 .nav-join-button {

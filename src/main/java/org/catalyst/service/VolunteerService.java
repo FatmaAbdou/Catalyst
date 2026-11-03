@@ -1,18 +1,24 @@
 package org.catalyst.service;
 
 import org.catalyst.model.AvailabilitySlot;
+import org.catalyst.model.Certificate;
 import org.catalyst.model.ServiceHour;
 import org.catalyst.model.Volunteer;
 import org.catalyst.model.VolunteerAssignment;
+import org.catalyst.model.VolunteerTask;
 import org.catalyst.repo.VolunteerRepository;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-/** Handles the volunteer profile and activity shown in the volunteer area. */
+/** Handles volunteer profiles, tasks, assignments, and service hours. */
 public final class VolunteerService {
     private final VolunteerRepository repository;
 
@@ -62,6 +68,125 @@ public final class VolunteerService {
 
     public List<ServiceHour> getServiceHours(Volunteer volunteer) throws SQLException {
         return repository.getServiceHours(volunteer.getId());
+    }
+
+    public List<String> getAssignmentNotifications(Volunteer volunteer) throws SQLException {
+        return repository.getAssignmentNotifications(volunteer.getId());
+    }
+
+    public void recordHours(
+            Volunteer volunteer, VolunteerAssignment assignment, LocalDate date, BigDecimal hours)
+            throws SQLException {
+        validateHours(date, hours);
+        if (assignment == null) {
+            throw new IllegalArgumentException("Select an active assignment.");
+        }
+        repository.recordHours(volunteer.getId(), assignment.id(), date, hours);
+    }
+
+    public List<ServiceHour> getPendingServiceHours() throws SQLException {
+        return repository.getPendingServiceHours();
+    }
+
+    public void approveServiceHour(ServiceHour serviceHour) throws SQLException {
+        if (serviceHour == null) {
+            throw new IllegalArgumentException("Select service hours to approve.");
+        }
+        repository.approveServiceHour(serviceHour.id());
+    }
+
+    public List<Volunteer> searchVolunteers(String filter) throws SQLException {
+        String cleanFilter = filter == null ? "" : filter.trim();
+        if (cleanFilter.length() > 255) {
+            throw new IllegalArgumentException("Search text must be 255 characters or fewer.");
+        }
+        return repository.searchVolunteers(cleanFilter);
+    }
+
+    public List<VolunteerTask> getTasks() throws SQLException {
+        return repository.getTasks();
+    }
+
+    public void deleteTask(VolunteerTask task) throws SQLException {
+        if (task == null) {
+            throw new IllegalArgumentException("Select a task to delete.");
+        }
+        repository.deleteTask(task.id());
+    }
+
+    public Map<Integer, String> getEvents() throws SQLException {
+        return repository.getEvents();
+    }
+
+    public void createTask(
+            Integer eventId, String description, LocalDateTime startsAt, LocalDateTime endsAt,
+            Set<String> requiredSkills, int volunteersNum) throws SQLException {
+        String cleanDescription = description == null ? "" : description.trim();
+        if (cleanDescription.isBlank() || cleanDescription.length() > 2000) {
+            throw new IllegalArgumentException("Task description must be 1 to 2000 characters.");
+        }
+        if (startsAt == null || endsAt == null || !endsAt.isAfter(startsAt)) {
+            throw new IllegalArgumentException("Task end time must be after its start time.");
+        }
+        if (volunteersNum < 1) {
+            throw new IllegalArgumentException("The volunteer limit must be at least one.");
+        }
+        if (eventId != null && !repository.getEvents().containsKey(eventId)) {
+            throw new IllegalArgumentException("Choose a currently upcoming event, or leave it blank.");
+        }
+        List<String> availableSkills = repository.getSkills();
+        List<String> cleanSkills = cleanSkills(requiredSkills);
+        for (String skill : cleanSkills) {
+            if (!availableSkills.contains(skill)) {
+                throw new IllegalArgumentException("Choose skills from the list.");
+            }
+        }
+        repository.createTask(new VolunteerTask(
+                0, eventId, null, cleanDescription, startsAt, endsAt, cleanSkills, volunteersNum));
+    }
+
+    public List<VolunteerAssignment> getAssignments(VolunteerTask task) throws SQLException {
+        return repository.getAssignmentsForTask(task.id());
+    }
+
+    public List<VolunteerTask> getCertificateTasks(Volunteer volunteer) throws SQLException {
+        return repository.getCertificateTasks(volunteer.getId());
+    }
+
+    public Certificate createCertificate(
+            String type, Volunteer volunteer, VolunteerTask task, String message)
+            throws SQLException {
+        if (volunteer == null) {
+            throw new IllegalArgumentException("Select a volunteer.");
+        }
+        if (type == null) {
+            throw new IllegalArgumentException("Choose a certificate type.");
+        }
+        CertificateFactory factory = switch (type) {
+            case "Participation" -> {
+                boolean participated = task != null && getCertificateTasks(volunteer).stream()
+                        .anyMatch(approvedTask -> approvedTask.id() == task.id());
+                if (!participated) {
+                    throw new IllegalArgumentException(
+                            "Participation certificates require approved service hours for that task.");
+                }
+                yield new ParticipationCertificateFactory();
+            }
+            case "Hours milestone" -> new HoursMilestoneCertificateFactory();
+            case "Appreciation" -> new AppreciationCertificateFactory();
+            default -> throw new IllegalArgumentException("Choose a certificate type.");
+        };
+        int approvedHours = repository.getApprovedHours(volunteer.getId());
+        return factory.create(volunteer, task, approvedHours, message);
+    }
+
+    private void validateHours(LocalDate date, BigDecimal hours) {
+        if (date == null || date.isAfter(LocalDate.now()) || hours == null || hours.signum() <= 0
+                || hours.stripTrailingZeros().scale() > 2
+                || hours.compareTo(new BigDecimal("9999.99")) > 0) {
+            throw new IllegalArgumentException(
+                    "Enter today or an earlier date and positive hours (up to 2 decimals).");
+        }
     }
 
     private List<String> cleanSkills(Set<String> skills) {

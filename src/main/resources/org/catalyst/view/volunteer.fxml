@@ -2,11 +2,13 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.MenuButton?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
@@ -63,11 +65,25 @@
                         <VBox spacing="14" GridPane.columnIndex="1" GridPane.rowIndex="0">
                             <VBox spacing="12" styleClass="form-card">
                                 <Label text="My assignments" styleClass="section-title"/>
-                                <ListView fx:id="assignmentsList" prefHeight="220" styleClass="activity-list"/>
+                                <ListView fx:id="assignmentsList" prefHeight="155" styleClass="activity-list"/>
+                                <Label text="Log hours for the selected assignment" styleClass="field-label"/>
+                                <HBox spacing="8">
+                                    <DatePicker fx:id="hoursDatePicker" HBox.hgrow="ALWAYS"
+                                                styleClass="input-field"/>
+                                    <TextField fx:id="hoursAmountField" promptText="Hours"
+                                               prefWidth="100" styleClass="input-field"/>
+                                </HBox>
+                                <Button text="Submit hours for approval" onAction="#logServiceHours"
+                                        styleClass="secondary-button"/>
                             </VBox>
                             <VBox spacing="12" styleClass="form-card">
-                                <Label text="My service hours" styleClass="section-title"/>
+                                <Label text="My submitted service hours" styleClass="section-title"/>
                                 <ListView fx:id="hoursList" prefHeight="190" styleClass="activity-list"/>
+                            </VBox>
+                            <VBox spacing="12" styleClass="form-card">
+                                <Label text="Assignment notifications" styleClass="section-title"/>
+                                <ListView fx:id="notificationsList" prefHeight="130"
+                                          styleClass="activity-list"/>
                             </VBox>
                         </VBox>
                     </GridPane>

@@ -5,6 +5,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import org.catalyst.model.Volunteer;
+import org.catalyst.model.VolunteerCoordinator;
 import org.catalyst.service.AuthService;
 import org.catalyst.view.SceneManager;
 
@@ -40,7 +41,9 @@ public final class LoginController {
                 return;
             }
             sceneManager.setCurrentUser(user.get());
-            if (user.get() instanceof Volunteer) {
+            if (user.get() instanceof VolunteerCoordinator) {
+                sceneManager.showCoordinatorDashboard();
+            } else if (user.get() instanceof Volunteer) {
                 sceneManager.showVolunteerDashboard();
             } else {
                 sceneManager.showWelcome();
@@ -52,8 +55,8 @@ public final class LoginController {
             LOGGER.log(Level.SEVERE, "The saved password hash could not be checked.", exception);
             showMessage("We could not check this account's password. Please contact support.");
         } catch (IOException exception) {
-            LOGGER.log(Level.SEVERE, "The welcome page could not be opened.", exception);
-            showMessage("You are signed in, but the welcome page could not be opened.");
+            LOGGER.log(Level.SEVERE, "The account dashboard could not be opened.", exception);
+            showMessage("You are signed in, but your dashboard could not be opened.");
         } finally {
             Arrays.fill(password, '\0');
             passwordField.clear();

@@ -4,6 +4,7 @@ package org.catalyst.communication;
 public interface CommunicationStrategy {
     DeliveryResult send(Message message);
     boolean supports(Recipient recipient);
+    boolean requiresRecipient();
     String getChannel();
 }
 

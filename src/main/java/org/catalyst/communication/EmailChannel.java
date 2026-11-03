@@ -3,6 +3,11 @@ package org.catalyst.communication;
 /** Validates the recipient's email address and simulates sending an email. */
 public class EmailChannel implements CommunicationStrategy {
     @Override
+    public boolean requiresRecipient() {
+        return true;
+    }
+
+    @Override
     public String getChannel() {
         return "email";
     }

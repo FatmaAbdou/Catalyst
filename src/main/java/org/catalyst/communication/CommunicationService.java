@@ -25,7 +25,7 @@ public class CommunicationService {
         if (message == null) {
             throw new IllegalArgumentException("Message cannot be null.");
         }
-        if (strategy instanceof SocialMediaChannel) {
+        if (strategy != null && !strategy.requiresRecipient()) {
             DeliveryResult result = strategy.send(message);
             if (message.getRecipients().isEmpty()) {
                 log.record(message, result.getChannel(), result.getStatus(), result.getErrorMessage());
@@ -87,7 +87,7 @@ public class CommunicationService {
     }
 
     public DeliveryResult broadcast(String role, String subject, String body) {
-        if (strategy instanceof SocialMediaChannel) {
+        if (strategy != null && !strategy.requiresRecipient()) {
             return new DeliveryResult("FAILED", strategy.getChannel(), null,
                     "Use send() with no recipients to publish on the organization's page.");
         }

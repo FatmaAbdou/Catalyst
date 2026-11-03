@@ -13,6 +13,11 @@ public abstract class SocialMediaChannel implements CommunicationStrategy {
     }
 
     @Override
+    public boolean requiresRecipient() {
+        return false;
+    }
+
+    @Override
     public boolean supports(Recipient recipient) {
         return recipient == null && hasAccount();
     }

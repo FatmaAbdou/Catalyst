@@ -3,6 +3,11 @@ package org.catalyst.communication;
 /** Validates the recipient's phone number and simulates sending an SMS. */
 public class SMSChannel implements CommunicationStrategy {
     @Override
+    public boolean requiresRecipient() {
+        return true;
+    }
+
+    @Override
     public String getChannel() {
         return "sms";
     }

@@ -301,8 +301,8 @@ public final class VolunteerRepository {
                 ORDER BY u.name
                 """;
         List<VolunteerAssignment> assignments = new ArrayList<>();
-        try (PreparedStatement statement =
-                     DatabaseConnection.getInstance().getConnection().prepareStatement(sql)) {
+        Connection connection = DatabaseConnection.getInstance().getConnection();
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, taskId);
             try (ResultSet result = statement.executeQuery()) {
                 while (result.next()) {
@@ -310,6 +310,7 @@ public final class VolunteerRepository {
                 }
             }
         }
+        loadServiceHours(connection, assignments);
         return assignments;
     }
 
@@ -325,13 +326,14 @@ public final class VolunteerRepository {
                 ORDER BY t.starts_at, u.name
                 """;
         List<VolunteerAssignment> assignments = new ArrayList<>();
-        try (PreparedStatement statement =
-                     DatabaseConnection.getInstance().getConnection().prepareStatement(sql);
+        Connection connection = DatabaseConnection.getInstance().getConnection();
+        try (PreparedStatement statement = connection.prepareStatement(sql);
              ResultSet result = statement.executeQuery()) {
             while (result.next()) {
                 assignments.add(readAssignment(result));
             }
         }
+        loadServiceHours(connection, assignments);
         return assignments;
     }
 
@@ -819,8 +821,8 @@ public final class VolunteerRepository {
                 ORDER BY t.starts_at
                 """;
         List<VolunteerAssignment> assignments = new ArrayList<>();
-        try (PreparedStatement statement =
-                     DatabaseConnection.getInstance().getConnection().prepareStatement(sql)) {
+        Connection connection = DatabaseConnection.getInstance().getConnection();
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, userId);
             try (ResultSet result = statement.executeQuery()) {
                 while (result.next()) {
@@ -828,6 +830,7 @@ public final class VolunteerRepository {
                 }
             }
         }
+        loadServiceHours(connection, assignments);
         return assignments;
     }
 
@@ -936,6 +939,48 @@ public final class VolunteerRepository {
                 result.getString("status"));
     }
 
+    private void loadServiceHours(
+            Connection connection, List<VolunteerAssignment> assignments) throws SQLException {
+        if (assignments.isEmpty()) {
+            return;
+        }
+
+        Map<Integer, VolunteerAssignment> assignmentsById = new LinkedHashMap<>();
+        for (VolunteerAssignment assignment : assignments) {
+            assignmentsById.put(assignment.id(), assignment);
+        }
+        String placeholders = String.join(
+                ",", java.util.Collections.nCopies(assignments.size(), "?"));
+        String sql = """
+                SELECT sr.service_record_id, sr.assignment_id, u.name AS volunteer_name,
+                       sr.service_date, sr.hours, t.description, sr.status
+                FROM service_records sr
+                JOIN volunteer_assignments a ON a.assignment_id = sr.assignment_id
+                JOIN volunteer_profiles vp ON vp.volunteer_id = a.volunteer_id
+                JOIN users u ON u.user_id = vp.user_id
+                JOIN volunteer_tasks t ON t.task_id = a.task_id
+                WHERE sr.assignment_id IN (%s)
+                ORDER BY sr.service_date, sr.service_record_id
+                """.formatted(placeholders);
+
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            int parameter = 1;
+            for (VolunteerAssignment assignment : assignments) {
+                statement.setInt(parameter++, assignment.id());
+            }
+            try (ResultSet result = statement.executeQuery()) {
+                while (result.next()) {
+                    ServiceHour serviceHour = readServiceHour(result);
+                    VolunteerAssignment assignment =
+                            assignmentsById.get(serviceHour.assignmentId());
+                    if (assignment != null) {
+                        assignment.addServiceHour(serviceHour);
+                    }
+                }
+            }
+        }
+    }
+
     private VolunteerAssignment getAssignment(Connection connection, int taskId, int volunteerId)
             throws SQLException {
         String sql = """
@@ -947,6 +992,7 @@ public final class VolunteerRepository {
                 JOIN volunteer_tasks t ON t.task_id = a.task_id
                 WHERE a.task_id = ? AND a.volunteer_id = ? AND a.status = 'ASSIGNED'
                 """;
+        VolunteerAssignment assignment;
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, taskId);
             statement.setInt(2, volunteerId);
@@ -954,9 +1000,11 @@ public final class VolunteerRepository {
                 if (!result.next()) {
                     throw new SQLException("The volunteer assignment could not be loaded.");
                 }
-                return readAssignment(result);
+                assignment = readAssignment(result);
             }
         }
+        loadServiceHours(connection, List.of(assignment));
+        return assignment;
     }
 
     private ServiceHour readServiceHour(ResultSet result) throws SQLException {

@@ -3,11 +3,13 @@ package org.catalyst.model.volunteer;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import org.catalyst.model.ServiceHour;
 
-/** A volunteer assigned to a task. */
+/** A volunteer's task assignment and the service-hour entries owned by it. */
 public final class VolunteerAssignment {
     private final int id;
     private final int taskId;
@@ -18,6 +20,7 @@ public final class VolunteerAssignment {
     private final LocalDateTime startsAt;
     private final LocalDateTime endsAt;
     private final String status;
+    private final List<ServiceHour> serviceHours = new ArrayList<>();
 
     public VolunteerAssignment(
             int id, int taskId, int userId, String volunteerName, String taskDescription,
@@ -69,10 +72,32 @@ public final class VolunteerAssignment {
         return status;
     }
 
+    public List<ServiceHour> serviceHours() {
+        return List.copyOf(serviceHours);
+    }
+
+    public void addServiceHour(ServiceHour serviceHour) {
+        if (serviceHour == null || serviceHour.assignmentId() != id) {
+            throw new IllegalArgumentException(
+                    "Service hours must belong to this volunteer assignment.");
+        }
+        if (!serviceHours.contains(serviceHour)) {
+            serviceHours.add(serviceHour);
+        }
+    }
+
+    public void removeUnpersistedServiceHour(ServiceHour serviceHour) {
+        if (serviceHour != null && serviceHour.id() == 0) {
+            serviceHours.remove(serviceHour);
+        }
+    }
+
     /** Creates a pending service-hour entry for this assignment. */
     public ServiceHour logHours(LocalDate date, BigDecimal hours) {
-        return new ServiceHour(
+        ServiceHour serviceHour = new ServiceHour(
                 0, id, volunteerName, date, hours, taskDescription, "PENDING");
+        addServiceHour(serviceHour);
+        return serviceHour;
     }
 
     @Override

@@ -127,7 +127,12 @@ public final class VolunteerService {
             throw new IllegalArgumentException("Select an active assignment.");
         }
         ServiceHour serviceHour = assignment.logHours(date, hours);
-        repository.recordHours(volunteer.getId(), serviceHour);
+        try {
+            repository.recordHours(volunteer.getId(), serviceHour);
+        } catch (SQLException | RuntimeException exception) {
+            assignment.removeUnpersistedServiceHour(serviceHour);
+            throw exception;
+        }
     }
 
     public List<ServiceHour> getPendingServiceHours() throws SQLException {
